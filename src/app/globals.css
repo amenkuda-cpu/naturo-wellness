@@ -1,0 +1,270 @@
+@import "tailwindcss";
+
+/* ════════════════════════════════════════════════════════════════════
+   NATURO DESIGN SYSTEM
+   Concept: "Botanical Plates": products presented like suspended
+   specimens in a sunlit botanical archive. Saturated colour fields,
+   fine rules, numbered plates, and editorial type.
+   ════════════════════════════════════════════════════════════════════ */
+
+@theme {
+  --color-forest: #173f2b;
+  --color-forest-900: #0d2619;
+  --color-botanical: #367a45;
+  --color-leaf: #77a84a;
+  --color-sun: #f5d84e;
+  --color-citrus: #fbea91;
+  --color-warm: #fffdf5;
+  --color-cream: #f5f0df;
+  --color-sand: #eadfc4;
+  --color-ink: #183126;
+  --color-ember: #e7893a;
+  --color-hibiscus: #b5122f;
+
+  --font-display: var(--font-bricolage), ui-sans-serif, system-ui, sans-serif;
+  --font-serif: var(--font-instrument), Georgia, "Times New Roman", serif;
+  --font-sans: var(--font-outfit), ui-sans-serif, system-ui, sans-serif;
+
+  --ease-expo: cubic-bezier(0.16, 1, 0.3, 1);
+  --ease-soft: cubic-bezier(0.33, 1, 0.68, 1);
+
+  --breakpoint-xs: 23.75rem;
+}
+
+@layer base {
+  html {
+    -webkit-text-size-adjust: 100%;
+    text-rendering: optimizeLegibility;
+  }
+  body {
+    background: var(--color-warm);
+    color: var(--color-ink);
+    font-family: var(--font-sans);
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+    overflow-x: clip;
+  }
+  ::selection {
+    background: var(--color-sun);
+    color: var(--color-forest);
+  }
+  :focus-visible {
+    outline: 2px solid var(--color-botanical);
+    outline-offset: 3px;
+    border-radius: 4px;
+  }
+  h1,
+  h2,
+  h3,
+  h4 {
+    text-wrap: balance;
+  }
+  input,
+  select,
+  textarea,
+  button {
+    font: inherit;
+  }
+}
+
+@layer components {
+  .container-x {
+    width: 100%;
+    max-width: 92rem;
+    margin-inline: auto;
+    padding-inline: 1rem;
+  }
+  @media (min-width: 40rem) {
+    .container-x {
+      padding-inline: 1.75rem;
+    }
+  }
+  @media (min-width: 64rem) {
+    .container-x {
+      padding-inline: 3rem;
+    }
+  }
+
+  /* Specimen-tag eyebrow: small caps label used across the site. */
+  .eyebrow {
+    font-family: var(--font-sans);
+    font-size: 0.72rem;
+    font-weight: 600;
+    letter-spacing: 0.22em;
+    text-transform: uppercase;
+  }
+
+  .display {
+    font-family: var(--font-display);
+    font-weight: 800;
+    letter-spacing: -0.035em;
+    line-height: 0.88;
+    text-transform: uppercase;
+  }
+
+  .serif-accent {
+    font-family: var(--font-serif);
+    font-style: italic;
+    font-weight: 400;
+    letter-spacing: -0.01em;
+  }
+
+  /* Paper grain overlay. */
+  .grain::after {
+    content: "";
+    position: absolute;
+    inset: 0;
+    pointer-events: none;
+    opacity: 0.3;
+    /* Pre-rendered noise tile: far cheaper to paint than an SVG turbulence filter. */
+    background-image: url("/images/brand/grain.png");
+    background-size: 128px 128px;
+  }
+
+  /* Fine botanical rule. */
+  .rule {
+    height: 1px;
+    background: currentColor;
+    opacity: 0.18;
+  }
+
+  .link-underline {
+    background-image: linear-gradient(currentColor, currentColor);
+    background-size: 0% 1px;
+    background-position: 0 100%;
+    background-repeat: no-repeat;
+    transition: background-size 0.45s var(--ease-expo);
+  }
+  .link-underline:hover,
+  .link-underline:focus-visible {
+    background-size: 100% 1px;
+  }
+
+  .field {
+    width: 100%;
+    border-radius: 0.9rem;
+    border: 1px solid color-mix(in srgb, var(--color-ink) 18%, transparent);
+    background: var(--color-warm);
+    padding: 0.85rem 1rem;
+    font-size: 1rem;
+    color: var(--color-ink);
+    transition:
+      border-color 0.2s,
+      box-shadow 0.2s;
+  }
+  .field:focus {
+    outline: none;
+    border-color: var(--color-botanical);
+    box-shadow: 0 0 0 4px color-mix(in srgb, var(--color-botanical) 18%, transparent);
+  }
+  .field[aria-invalid="true"] {
+    border-color: #b42318;
+    box-shadow: 0 0 0 4px color-mix(in srgb, #b42318 12%, transparent);
+  }
+}
+
+/* ── Motion pre-states ────────────────────────────────────────────────
+   `motion-ok` is added by an inline script before paint when the visitor
+   has not requested reduced motion. Hero elements stay hidden only until
+   GSAP takes over; a failsafe reveals them after 3.5 s regardless. */
+@keyframes failsafe-reveal {
+  to {
+    visibility: visible;
+  }
+}
+.motion-ok [data-hero]:not([data-ready]) .hero-pre {
+  visibility: hidden;
+  animation: failsafe-reveal 0s linear 6s forwards;
+}
+/* Desktop-only pre-state: on phones the headline and main bottle paint immediately (LCP). */
+@media (min-width: 64rem) {
+  .motion-ok [data-hero]:not([data-ready]) .hero-pre-lg {
+    visibility: hidden;
+    animation: failsafe-reveal 0s linear 3.5s forwards;
+  }
+}
+
+/* Layers animated every frame get their own compositor layer, so filtered
+   images (drop shadows, blur) are rasterised once instead of every frame. */
+[data-pendulum],
+[data-sway],
+[data-float] {
+  will-change: transform;
+}
+@media (min-width: 64rem) {
+  [data-tilt] {
+    will-change: transform;
+  }
+}
+
+/* Hero vine depth: background stems are softly blurred once fully grown (the blur
+   is held off during growth, when those layers repaint every frame). */
+.vine-depth-blur {
+  filter: blur(1.6px);
+  transition: filter 0.9s ease;
+}
+.motion-ok [data-hero]:not([data-grown]) .vine-depth-blur {
+  filter: none;
+}
+
+/* Lenis */
+html.lenis,
+html.lenis body {
+  height: auto;
+}
+.lenis.lenis-smooth {
+  scroll-behavior: auto !important;
+}
+.lenis.lenis-smooth [data-lenis-prevent] {
+  overscroll-behavior: contain;
+}
+.lenis.lenis-stopped {
+  overflow: clip;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+}
+
+/* Gentle CSS pendulum sway (used where GSAP is not needed). */
+@keyframes sway {
+  from {
+    rotate: -2.2deg;
+  }
+  to {
+    rotate: 2.2deg;
+  }
+}
+@utility sway {
+  animation: sway 4.2s ease-in-out infinite alternate;
+}
+
+/* Skip layout & paint of off-screen sections until they approach the viewport. */
+@utility cv-auto {
+  content-visibility: auto;
+  contain-intrinsic-size: auto 900px;
+}
+
+/* Marquee */
+@keyframes marquee {
+  to {
+    transform: translate3d(-50%, 0, 0);
+  }
+}
+.marquee-track {
+  animation: marquee var(--marquee-duration, 38s) linear infinite;
+}
+
+.no-scrollbar {
+  scrollbar-width: none;
+}
+.no-scrollbar::-webkit-scrollbar {
+  display: none;
+}
