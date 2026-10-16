@@ -23,9 +23,12 @@ export function Header({ showAccount }: { showAccount: boolean }) {
   useEffect(() => {
     let raf = 0;
     const onScroll = () => {
+      // Read the position here, in the scroll event, while layout is clean.
+      // Reading it inside the rAF (after GSAP's per-frame style writes) forced
+      // a full style recalculation on every scroll frame.
+      const y = window.scrollY;
       cancelAnimationFrame(raf);
       raf = requestAnimationFrame(() => {
-        const y = window.scrollY;
         setScrolled(y > 24);
         setHidden(y > 480 && y > lastY.current + 4);
         if (y < lastY.current - 4 || y < 480) setHidden(false);

@@ -541,10 +541,15 @@ export function HeroVine({ className }: { className?: string }) {
             data-stem-sway
             data-amp={stem.def.sway[0]}
             data-period={stem.def.sway[1]}
-            className={`absolute inset-0 ${LAYER_STYLE[layer].className ?? ""} ${className ?? ""}`}
-            style={{ ...LAYER_STYLE[layer].style, willChange: "transform" }}
+            className={`absolute inset-0 ${className ?? ""}`}
+            style={{ willChange: "transform" }}
           >
-            <StemSvg stem={stem} />
+            {/* Blur & opacity live on an inner, non-composited wrapper so they are
+                baked into the layer's raster once. On the swaying layer itself the
+                GPU had to re-blur the whole layer on every frame of the sway. */}
+            <div className={`absolute inset-0 ${LAYER_STYLE[layer].className ?? ""}`} style={LAYER_STYLE[layer].style}>
+              <StemSvg stem={stem} />
+            </div>
           </div>
         )),
       )}

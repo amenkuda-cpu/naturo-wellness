@@ -28,7 +28,10 @@ export function SmoothScroll() {
       smoothScroll.set(lenis);
       lenis.on("scroll", ScrollTrigger.update);
       const tick = (time: number) => lenis.raf(time * 1000);
-      gsap.ticker.add(tick);
+      // Prioritised: Lenis scrolls (and ScrollTrigger reads the position) before
+      // GSAP writes this frame's styles. Running after the writes made every
+      // scrollTo() force a full style + layout pass, once per frame.
+      gsap.ticker.add(tick, false, true);
       gsap.ticker.lagSmoothing(0);
       cleanup = () => {
         gsap.ticker.remove(tick);

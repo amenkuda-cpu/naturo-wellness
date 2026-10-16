@@ -168,15 +168,17 @@ export function Hero() {
           //     from the growth model, with each stem's easing baked in.
           const at = (e: Element) => Number(e.getAttribute("data-at"));
           const shown = (e: Element) => e.getClientRects().length > 0;
-          q("[data-grow-seg]")
-            .filter(shown)
-            .forEach((p) =>
-            tl.fromTo(
-              p,
-              { strokeDashoffset: 1 },
-              { strokeDashoffset: 0, duration: Number(p.getAttribute("data-dur")), ease: "none" },
-              at(p),
-            ),
+          // ~1,000 vine pieces animate here, so every DOM read happens up front and
+          // every write after it. Segment start states go in one batched set and the
+          // per-segment tweens are plain .to()s (no re-reads). Building them as
+          // individual fromTo()s interleaved a read with a write for every piece,
+          // forcing ~2,500 full style recalculations during the intro.
+          const segs = q("[data-grow-seg]").filter(shown);
+          const leaves = [...el.querySelectorAll<SVGGElement>("[data-leaf]")].filter(shown);
+          gsap.set(segs, { strokeDashoffset: 1 });
+          gsap.set(leaves, { scale: 0, rotation: -40, transformOrigin: "0% 50%", smoothOrigin: false });
+          segs.forEach((p) =>
+            tl.to(p, { strokeDashoffset: 0, duration: Number(p.getAttribute("data-dur")), ease: "none" }, at(p)),
           );
           q("[data-shade]").forEach((p) =>
             tl.fromTo(p, { autoAlpha: 0 }, { autoAlpha: 1, duration: 0.6, ease: "power1.out" }, at(p)),
@@ -184,16 +186,7 @@ export function Hero() {
 
           // 3 · Leaves unfurl just behind the growing tips. Short tweens keep the number
           //     of leaves animating at any moment (the main cost) low.
-          q("[data-leaf]")
-            .filter(shown)
-            .forEach((l) =>
-              tl.fromTo(
-                l,
-                { scale: 0, rotation: -40 },
-                { scale: 1, rotation: 0, duration: 0.32, ease: "back.out(2)", transformOrigin: "0% 50%", smoothOrigin: false },
-                at(l),
-              ),
-            );
+          leaves.forEach((l) => tl.to(l, { scale: 1, rotation: 0, duration: 0.32, ease: "back.out(2)" }, at(l)));
           tl.fromTo(
             q("[data-knot]"),
             { scale: 0 },
