@@ -377,8 +377,12 @@ export function Hero() {
           <div data-near className="absolute inset-0">
             {near.map((f, i) => (
               <div key={i} data-item className={cn("hero-pre absolute", f.className)}>
-                <div data-float className="[filter:drop-shadow(0_16px_16px_rgba(23,49,38,0.2))]">
-                  <MotifImage motif={f.motif} className={f.img} sizes="(min-width: 1024px) 10vw, 24vw" />
+                <div data-float>
+                  {/* Shadow on an inner, static wrapper: on the floating (composited)
+                      layer the GPU recomputed the drop shadow every frame. */}
+                  <div className="[filter:drop-shadow(0_16px_16px_rgba(23,49,38,0.2))]">
+                    <MotifImage motif={f.motif} className={f.img} sizes="(min-width: 1024px) 10vw, 24vw" />
+                  </div>
                 </div>
               </div>
             ))}

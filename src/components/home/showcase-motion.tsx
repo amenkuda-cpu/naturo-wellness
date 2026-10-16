@@ -28,7 +28,9 @@ function enterScene(tl: gsap.core.Timeline, scene: Element, style: Choreography,
       break;
     }
     case "soft":
-      tl.fromTo(bottle, { scale: 0.8, y: 50, autoAlpha: 0, filter: "blur(16px)" }, { scale: 1, y: 0, autoAlpha: 1, filter: "blur(0px)", duration: 1.2, ease: "power2.out" }, at);
+      tl.fromTo(bottle, { scale: 0.8, y: 50, autoAlpha: 0, filter: "blur(16px)" }, { scale: 1, y: 0, autoAlpha: 1, filter: "blur(0px)", duration: 1.2, ease: "power2.out" }, at)
+        // Drop the finished blur(0px): any filter left on a moving layer costs a GPU pass every frame.
+        .set(bottle, { filter: "none" }, at + 1.2);
       tl.fromTo(ings, { y: 80, autoAlpha: 0, rotate: 25 }, { y: 0, autoAlpha: 1, rotate: 0, duration: 1.3, stagger: 0.1, ease: "sine.out" }, at + 0.2);
       break;
     case "drop":

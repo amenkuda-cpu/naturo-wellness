@@ -338,7 +338,7 @@ function buildStem(def: StemDef): BuiltStem {
     const tAt = (f: number) => easedTime(at, dur, f);
 
     // Front stems get sparser leaves so the near layer stays airy, not a wall.
-    const step = depth ? 5 : def.layer === "front" ? 7 : 6;
+    const step = depth ? 6 : def.layer === "front" ? 9 : 8;
     for (let i = 3, side = rand() < 0.5 ? 1 : -1; i < bp.length - 1; i += step, side *= -1) {
       addLeaf(bp[i], angleAt(bp, i) + side * (42 + rand() * 38), (depth ? 0.55 : 0.7) + rand() * 0.45, tAt(i / (bp.length - 1)) + 0.06, depth === 1 || i % 2 === 0);
     }
@@ -350,7 +350,8 @@ function buildStem(def: StemDef): BuiltStem {
       for (let k = 0; k < 2; k++) addLeaf(tip, tipA - 22 + k * 44 + (rand() - 0.5) * 16, (depth ? 0.6 : 0.8) + rand() * 0.3, at + dur + 0.02, depth === 1);
     }
     if (depth === 0) {
-      const subs = length > 110 ? 2 : 1;
+      // Only longer branches fork: sub-branches were most of the vine's paths.
+      const subs = length > 110 ? 1 : 0;
       for (let k = 0; k < subs; k++) {
         const u = 0.38 + k * 0.28 + rand() * 0.08;
         const i = Math.round(u * (bp.length - 1));
@@ -383,7 +384,7 @@ function buildStem(def: StemDef): BuiltStem {
   });
 
   // Leaves along the stem itself, set on alternating sides of its edge.
-  for (let i = Math.round(pts.length * 0.12), s = 1; i < pts.length - 1; i += def.layer === "front" ? 8 : 6, s *= -1) {
+  for (let i = Math.round(pts.length * 0.12), s = 1; i < pts.length - 1; i += def.layer === "front" ? 10 : 8, s *= -1) {
     const f = i / (pts.length - 1);
     const off = (widthAt(def.w0, w1, f) / 2) * s;
     const a = angleAt(pts, i);
@@ -392,7 +393,7 @@ function buildStem(def: StemDef): BuiltStem {
   // The stem ends in a big curl.
   addTendril(pts[pts.length - 1], angleAt(pts, pts.length - 1), def.w0 * 2.6 + 40, def.curl, timeAt(0.98), false);
 
-  const segs = segmentsOf(pts, def.w0, w1, def.w0 > 30 ? 16 : 11, timeAt);
+  const segs = segmentsOf(pts, def.w0, w1, def.w0 > 30 ? 10 : 7, timeAt);
   const doneAt = Math.max(
     timeAt(0.9999),
     ...branches.concat(hangers).map((b) => b.at + b.dur),
@@ -467,7 +468,7 @@ function StemSvg({ stem }: { stem: BuiltStem }) {
           <path key={`s${i}`} data-grow-seg data-at={s.at.toFixed(2)} data-dur={s.dur.toFixed(2)} d={s.d} stroke={c.stem} strokeWidth={s.w} pathLength={1} strokeDasharray="1 1" strokeDashoffset="0" />
         ))}
         {all.map((b, bi) =>
-          segmentsOf(b.pts, b.w0, b.w1, b.minor ? 2 : 3, (f) => easedTime(b.at, b.dur, f)).map((s, i) => (
+          segmentsOf(b.pts, b.w0, b.w1, b.minor ? 1 : 2, (f) => easedTime(b.at, b.dur, f)).map((s, i) => (
             <path
               key={`b${bi}-${i}`}
               data-grow-seg
