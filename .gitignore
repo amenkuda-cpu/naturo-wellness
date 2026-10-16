@@ -49,3 +49,6 @@ next-env.d.ts
 
 # stray nested build cache
 /Naturo Wellness/
+
+# Local Netlify folder
+.netlify
