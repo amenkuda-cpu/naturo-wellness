@@ -42,15 +42,15 @@ export const devSampleZones: DeliveryZone[] = [
   },
 ];
 
-/** Development-only sample prices in cents. NEVER used in production builds. */
+/**
+ * Development-only sample prices in cents, applied only to products that have
+ * no catalogue price yet. NEVER used in production builds.
+ */
 export const devSamplePrices: Record<string, number> = {
-  "ginger-shot-standard": 250,
-  "glow-shot-standard": 250,
-  "hibiscus-shot-standard": 250,
-  "pineapple-shot-standard": 250,
-  "mens-vitality-shot-standard": 300,
-  "maheu-standard": 150,
   // Muvhee intentionally left unpriced to exercise the "Price coming soon" state.
-  "ginger-lemon-carrot-tea-standard": 400,
-  "ginger-lemon-carrot-powder-standard": 450,
+  "ginger-lemon-carrot-powder-standard": 400,
 };
+
+/** True when a variant's price came from `devSamplePrices` (labelled "Sample price" in development). */
+export const isDevSamplePrice = (variantId: string | undefined) =>
+  Boolean(variantId && Object.hasOwn(devSamplePrices, variantId));

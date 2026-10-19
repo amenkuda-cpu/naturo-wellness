@@ -6,7 +6,7 @@ import { productBySlug } from "@/data/products";
 
 /** Brand story: arch-framed composition + editorial copy. */
 export function Story({ withLink = true }: { withLink?: boolean }) {
-  const maheu = productBySlug("maheu")!;
+  const maheu = productBySlug("maheu-traditional")!;
   const ginger = productBySlug("ginger-shot")!;
   return (
     <Reveal as="section" aria-labelledby="story-title" className="cv-auto relative overflow-hidden bg-forest py-24 text-warm lg:py-36">

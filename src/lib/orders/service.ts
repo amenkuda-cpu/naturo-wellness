@@ -1,5 +1,6 @@
 import "server-only";
 import { commerceConfig } from "@/config/commerce";
+import { categories } from "@/data/products";
 import { buildQuote, type Quote } from "@/lib/commerce/pricing";
 import type { CheckoutData } from "@/lib/commerce/validation";
 import { env } from "@/lib/env";
@@ -14,7 +15,7 @@ export async function quoteCart(input: {
   items: CartLine[];
   fulfilment?: { method: FulfilmentMethod; zoneId?: string };
   promoCode?: string | null;
-}): Promise<{ quote: Quote; zone: DeliveryZone | null; fulfilmentError: string | null }> {
+}): Promise<{ quote: Quote; zone: DeliveryZone | null; fulfilmentError: string | null; ageRestricted: boolean }> {
   const repo = getRepository();
   const [catalog, zones, promotion] = await Promise.all([
     repo.loadCatalog(),
@@ -46,7 +47,12 @@ export async function quoteCart(input: {
     maxQuantityPerLine: commerceConfig.maxQuantityPerLine,
     currency: commerceConfig.currency,
   });
-  return { quote, zone, fulfilmentError };
+  const restrictedCategories = new Set(categories.filter((c) => c.ageRestricted).map((c) => c.id));
+  const ageRestricted = input.items.some((line) => {
+    const product = catalog.find((p) => p.id === line.productId);
+    return product ? restrictedCategories.has(product.category) : false;
+  });
+  return { quote, zone, fulfilmentError, ageRestricted };
 }
 
 export type PlaceOrderResult =
@@ -68,7 +74,7 @@ export async function placeOrder(data: CheckoutData, customerId: string | null):
     return { ok: false, status: 422, error: "That payment method isn't available.", fieldErrors: { paymentMethod: "Choose an available payment method." } };
   }
 
-  const { quote, zone, fulfilmentError } = await quoteCart({
+  const { quote, zone, fulfilmentError, ageRestricted } = await quoteCart({
     items: data.items,
     fulfilment:
       data.fulfilment.method === "delivery"
@@ -84,6 +90,10 @@ export async function placeOrder(data: CheckoutData, customerId: string | null):
       error: fulfilmentError ?? "Choose a delivery area.",
       fieldErrors: { "fulfilment.zoneId": fulfilmentError ?? "Choose a delivery area." },
     };
+  }
+  if (ageRestricted && !data.ageConfirmed) {
+    const message = "Please confirm you are 18 or older to order Naturo Cans.";
+    return { ok: false, status: 422, error: message, fieldErrors: { ageConfirmed: message } };
   }
   if (quote.issues.length > 0 || quote.lines.length === 0) {
     return { ok: false, status: 409, error: "Some items in your cart need attention.", quote };
@@ -118,7 +128,8 @@ export async function placeOrder(data: CheckoutData, customerId: string | null):
       tax: quote.tax,
       total: quote.total,
       promoCode: quote.promotionCode,
-      notes: data.notes,
+      notes: ageRestricted ? `[18+ confirmed by customer at checkout]${data.notes ? `
+${data.notes}` : ""}` : data.notes,
       accessTokenHash: hashAccessToken(accessToken),
     });
   } catch (err) {

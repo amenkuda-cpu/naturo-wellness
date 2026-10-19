@@ -47,14 +47,17 @@ test.describe("Storefront", () => {
 
   test("shop filters by category and search", async ({ page }) => {
     await page.goto("/shop");
-    await expect(page.getByText("9 products")).toBeVisible();
+    await expect(page.getByText("19 products")).toBeVisible();
     await page.getByRole("tab", { name: "Traditional Favourites" }).click();
     await expect(page).toHaveURL(/category=traditional-favourites/);
-    await expect(page.getByText("2 products")).toBeVisible();
+    await expect(page.getByText("3 products")).toBeVisible();
+    await page.getByRole("tab", { name: "Naturo Cans" }).click();
+    await expect(page.getByText("3 products")).toBeVisible();
     await page.getByRole("tab", { name: "All" }).click();
     await page.getByRole("searchbox", { name: "Search products" }).fill("hibiscus");
-    await expect(page.getByText("1 product", { exact: true })).toBeVisible();
+    await expect(page.getByText("2 products", { exact: true })).toBeVisible();
     await expect(page.getByRole("heading", { name: "Hibiscus Shot" })).toBeVisible();
+    await expect(page.getByRole("heading", { name: "Hibiscus Herbal Tea" })).toBeVisible();
   });
 
   test("unpriced product shows 'Price coming soon' and cannot be bought", async ({ page }) => {
@@ -80,6 +83,21 @@ test.describe("Storefront", () => {
     expect(body.quote.issues[0].code).toBe("not_for_sale");
   });
 
+  test("server refuses 18+ products unless the customer confirms their age", async ({ request }) => {
+    const res = await request.post("/api/checkout", {
+      data: {
+        items: [{ productId: "orange-can", variantId: "orange-can-standard", quantity: 1 }],
+        customer: { fullName: "Test Person", phone: "0771234567", email: "" },
+        fulfilment: { method: "collection" },
+        paymentMethod: "cash_on_delivery",
+        acceptTerms: true,
+      },
+    });
+    expect(res.status()).toBe(422);
+    const body = await res.json();
+    expect(body.fieldErrors.ageConfirmed).toMatch(/18 or older/);
+  });
+
   test("order pages require the private access token", async ({ request }) => {
     const res = await request.get("/api/orders/00000000-0000-0000-0000-000000000000?t=nope");
     expect(res.status()).toBe(404);
@@ -95,7 +113,7 @@ test.describe("Storefront", () => {
     );
     expect(hiddenPre).toBe(0);
     // Showcase scenes are stacked (not pinned) and all readable.
-    await expect(page.locator("article[data-scene]")).toHaveCount(7);
+    await expect(page.locator("article[data-scene]")).toHaveCount(8);
     await expect(page.locator("article[data-scene]").last()).toBeVisible();
     await ctx.close();
   });

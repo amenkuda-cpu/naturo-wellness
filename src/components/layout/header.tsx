@@ -5,7 +5,7 @@ import { AnimatePresence, motion } from "motion/react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useEffect, useRef, useState } from "react";
-import { Logo } from "@/components/brand/logo";
+import { LOGO_COMPACT, LOGO_HERO, Logo } from "@/components/brand/logo";
 import { cart, useCart } from "@/components/cart/cart-store";
 import { mainNav, siteConfig } from "@/config/site";
 import { cn } from "@/lib/cn";
@@ -86,8 +86,17 @@ export function Header({ showAccount }: { showAccount: boolean }) {
         )}
       >
         <div className="container-x flex h-16 items-center justify-between gap-4 sm:h-20">
-          <Link href="/" aria-label="Naturo Wellness home" className="relative z-[71] flex items-center">
-            <Logo />
+          <Link
+            href="/"
+            aria-label="Naturo Wellness home"
+            className={cn("relative z-[71] flex items-center", !solid && !menuOpen && "self-start pt-2")}
+          >
+            <Logo
+              className={cn(
+                "transition-[height] duration-500 ease-[var(--ease-expo)]",
+                !solid && !menuOpen ? LOGO_HERO : LOGO_COMPACT,
+              )}
+            />
           </Link>
 
           <nav aria-label="Main" className="hidden lg:block">

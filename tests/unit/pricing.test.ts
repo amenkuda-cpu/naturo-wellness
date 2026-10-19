@@ -70,9 +70,11 @@ describe("purchasability", () => {
     expect(v(makeProduct("noqty", 100, { stockQuantity: 0 }))).toBe(false);
   });
 
-  it("ships the real catalogue with no prices, so nothing is purchasable by default", () => {
-    expect(products.every((p) => !isProductPurchasable(p))).toBe(true);
-    expect(products.every((p) => fromPrice(p) === null)).toBe(true);
+  it("only catalogue products with a starting price are purchasable", () => {
+    for (const p of products) expect(isProductPurchasable(p)).toBe(fromPrice(p) !== null);
+    // Products still waiting for a price stay "Price coming soon".
+    expect(isProductPurchasable(products.find((p) => p.id === "muvhee")!)).toBe(false);
+    expect(isProductPurchasable(products.find((p) => p.id === "ginger-shot")!)).toBe(true);
   });
 });
 

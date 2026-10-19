@@ -213,9 +213,12 @@ function buildMobileScene(scene: Element, style: Choreography) {
       { ...mobileFrom(style), autoAlpha: 0 },
       { x: 0, y: 0, rotation: 0, scale: 1, autoAlpha: 1, duration: 1.2, ease: "expo.out", stagger: 0.1 },
     )
-      .fromTo(s("[data-pendulum]"), { rotation: 22 }, { rotation: 0, duration: 2, ease: "elastic.out(1, 0.35)" }, 0)
       .fromTo(s('[data-s="ing"]'), { autoAlpha: 0, scale: 0.5 }, { autoAlpha: 1, scale: 1, duration: 0.9, stagger: 0.06, ease: "back.out(1.6)" }, 0.2)
       .fromTo(s('[data-s="name"]'), { yPercent: 115 }, { yPercent: 0, duration: 0.9, stagger: 0.06 }, 0.25)
-      .fromTo(s('[data-s="copy"], [data-s="tag"]'), { y: 24, autoAlpha: 0 }, { y: 0, autoAlpha: 1, duration: 0.7, stagger: 0.05 }, 0.4)
-      .fromTo(s('[data-s="steam"] path'), { strokeDashoffset: 1 }, { strokeDashoffset: 0, duration: 1.6, stagger: 0.2 }, 0.4);
+      .fromTo(s('[data-s="copy"], [data-s="tag"]'), { y: 24, autoAlpha: 0 }, { y: 0, autoAlpha: 1, duration: 0.7, stagger: 0.05 }, 0.4);
+    // Scene-specific layers (only some scenes have them).
+    const pendulum = s("[data-pendulum]");
+    if (pendulum.length) tl.fromTo(pendulum, { rotation: 22 }, { rotation: 0, duration: 2, ease: "elastic.out(1, 0.35)" }, 0);
+    const steam = s('[data-s="steam"] path');
+    if (steam.length) tl.fromTo(steam, { strokeDashoffset: 1 }, { strokeDashoffset: 0, duration: 1.6, stagger: 0.2 }, 0.4);
 }

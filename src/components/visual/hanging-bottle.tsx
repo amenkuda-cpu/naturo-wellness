@@ -5,9 +5,9 @@ import type { PackagingShape, Product } from "@/lib/types";
 
 /**
  * Where the hanging line meets the product, as a fraction of image height,
- * for the current placeholder artwork. Adjust when final photos arrive.
+ * matching where each product photo is placed inside its 900x1350 frame.
  */
-const HANG_POINT: Record<PackagingShape, number> = { shot: 0.125, tall: 0.173, pouch: 0.163 };
+const HANG_POINT: Record<PackagingShape, number> = { shot: 0.125, tall: 0.173, pouch: 0.163, can: 0.148 };
 
 /**
  * A product suspended from a fine line. The pivot sits at the anchor's

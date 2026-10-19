@@ -13,6 +13,7 @@ import { siteConfig } from "@/config/site";
 import { track } from "@/lib/analytics";
 import { cn } from "@/lib/cn";
 import { formatMoney } from "@/lib/commerce/pricing";
+import { isAgeRestricted, productById } from "@/data/products";
 import { checkoutSchema, fieldErrors } from "@/lib/commerce/validation";
 import type { FulfilmentMethod, PaymentMethodId } from "@/lib/types";
 
@@ -29,6 +30,7 @@ const FIELD_IDS: Record<string, string> = {
   "fulfilment.zoneId": "zone",
   paymentMethod: "payment-0",
   acceptTerms: "acceptTerms",
+  ageConfirmed: "ageConfirmed",
 };
 const ID_TO_KEY = Object.fromEntries(Object.entries(FIELD_IDS).map(([k, v]) => [v, k]));
 
@@ -131,6 +133,11 @@ export function CheckoutForm() {
     "aria-describedby": errors[k] ? `${id}-error` : undefined,
   });
 
+  const needsAge = lines.some((l) => {
+    const p = productById(l.productId);
+    return p ? isAgeRestricted(p) : false;
+  });
+
   async function onSubmit(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault();
     if (submitting) return;
@@ -159,11 +166,14 @@ export function CheckoutForm() {
       promoCode: promo,
       notes: String(fd.get("notes") ?? ""),
       acceptTerms: fd.get("acceptTerms") === "on",
+      ageConfirmed: fd.get("ageConfirmed") === "on",
     };
 
     const local = checkoutSchema.safeParse(payload);
-    if (!local.success) {
-      const fe = fieldErrors(local.error);
+    const ageMissing = needsAge && !payload.ageConfirmed;
+    if (!local.success || ageMissing) {
+      const fe = local.success ? {} : fieldErrors(local.error);
+      if (ageMissing) fe.ageConfirmed = "Please confirm you are 18 or older to order Naturo Cans.";
       setErrors(fe);
       setFormError("Please check the highlighted fields.");
       focusFirstError(fe);
@@ -417,6 +427,25 @@ export function CheckoutForm() {
               </span>
             </label>
             {err("acceptTerms") && <p className="mt-1.5 text-sm text-[#b42318]">{err("acceptTerms")}</p>}
+
+            {needsAge && (
+              <>
+                <label className="mt-4 flex items-start gap-3 text-sm">
+                  <input
+                    id="ageConfirmed"
+                    name="ageConfirmed"
+                    type="checkbox"
+                    className="mt-0.5 h-4 w-4 accent-[#173F2B]"
+                    aria-invalid={Boolean(err("ageConfirmed")) || undefined}
+                  />
+                  <span>
+                    <strong>I confirm I am 18 or older.</strong> Naturo Cans contain alcohol, and we may ask for ID on
+                    delivery or collection.
+                  </span>
+                </label>
+                {err("ageConfirmed") && <p className="mt-1.5 text-sm text-[#b42318]">{err("ageConfirmed")}</p>}
+              </>
+            )}
 
             <button
               type="submit"

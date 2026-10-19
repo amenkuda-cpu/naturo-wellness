@@ -6,6 +6,8 @@ import { useEffect, useRef, useState } from "react";
 import { cart } from "@/components/cart/cart-store";
 import { useStore } from "@/components/providers/store-provider";
 import { ButtonLabel, buttonClasses } from "@/components/ui/button";
+import { isDevSamplePrice } from "@/config/commerce";
+import { isAgeRestricted } from "@/data/products";
 import { track } from "@/lib/analytics";
 import { cn } from "@/lib/cn";
 import { formatMoney, isVariantPurchasable } from "@/lib/commerce/pricing";
@@ -56,7 +58,7 @@ export function PurchasePanel({ slug }: { slug: string }) {
           product={product}
           variant={variant}
           className="font-display text-3xl"
-          sample={settings.samplePricing && variant?.price !== null}
+          sample={settings.samplePricing && isDevSamplePrice(variant?.id)}
         />
         {variant && <StockBadge status={variant.stockStatus} />}
       </div>
@@ -83,6 +85,13 @@ export function PurchasePanel({ slug }: { slug: string }) {
       {product.variants.length === 1 && (
         <p className="mt-3 text-sm text-ink/75">
           Size: {variant?.size ?? <span className="italic">to be confirmed</span>}
+        </p>
+      )}
+      {isAgeRestricted(product) && (
+        <p className="mt-4 flex items-start gap-3 rounded-2xl border border-ink/15 bg-cream px-4 py-3 text-sm text-ink/85">
+          <span className="shrink-0 rounded-full bg-ink px-2 py-0.5 text-[0.65rem] font-bold text-warm">18+</span>
+          Contains alcohol (5.2% alc./vol.). Only sold to adults aged 18 and over; you&apos;ll confirm your age at
+          checkout and we may ask for ID on delivery or collection. Please enjoy responsibly.
         </p>
       )}
 

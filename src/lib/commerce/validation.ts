@@ -72,6 +72,8 @@ export const checkoutSchema = z.object({
   promoCode: z.string().trim().max(32).optional().default(""),
   notes: z.string().trim().max(500, "Keep order notes under 500 characters.").optional().default(""),
   acceptTerms: z.literal(true, { error: "Please accept the terms to place your order." }),
+  /** Required (checked on the server) when the cart contains an 18+ product. */
+  ageConfirmed: z.boolean().optional().default(false),
 });
 
 export type CheckoutInput = z.input<typeof checkoutSchema>;

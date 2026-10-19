@@ -1,5 +1,6 @@
 import Link from "next/link";
-import { categoryById } from "@/data/products";
+import { isDevSamplePrice } from "@/config/commerce";
+import { categoryById, isAgeRestricted } from "@/data/products";
 import { cn } from "@/lib/cn";
 import type { Product } from "@/lib/types";
 import { AddToCartButton } from "./add-to-cart";
@@ -52,6 +53,14 @@ export function ProductCard({
               Nº {String(index + 1).padStart(2, "0")}
             </span>
           )}
+          {isAgeRestricted(product) && (
+            <span
+              title="Contains alcohol. 18+ only."
+              className="rounded-full bg-ink px-2.5 py-1 text-[0.6rem] font-bold uppercase tracking-[0.14em] text-warm"
+            >
+              18+
+            </span>
+          )}
         </div>
         <div className="absolute bottom-4 right-4 z-10">
           <AddToCartButton product={product} compact />
@@ -69,7 +78,7 @@ export function ProductCard({
         </div>
       </div>
       <div className="mt-3 flex items-center justify-between gap-3 px-1 text-sm">
-        <PriceTag product={product} sample={samplePricing && priced} />
+        <PriceTag product={product} sample={samplePricing && priced && isDevSamplePrice(variant?.id)} />
         {variant && <StockBadge status={variant.stockStatus} />}
       </div>
     </article>

@@ -5,7 +5,8 @@ import { PriceTag } from "@/components/product/price";
 import { MotifImage, ProductImage } from "@/components/product/product-image";
 import { ButtonLabel, buttonClasses } from "@/components/ui/button";
 import { HangingBottle } from "@/components/visual/hanging-bottle";
-import { categoryById } from "@/data/products";
+import { isDevSamplePrice } from "@/config/commerce";
+import { categoryById, isAgeRestricted } from "@/data/products";
 import { cn } from "@/lib/cn";
 import type { Motif, Product } from "@/lib/types";
 import { ShowcaseMotion, type Choreography } from "./showcase-motion";
@@ -29,8 +30,9 @@ const SCENES: SceneDef[] = [
   { id: "hibiscus", label: "Hibiscus", slugs: ["hibiscus-shot"], style: "drop", bg: "#5E0E22", dark: true, ghost: "HIBISCUS", accent: "#F26C83" },
   { id: "pineapple", label: "Pineapple", slugs: ["pineapple-shot"], style: "tropical", bg: "#F9D449", ghost: "TROPICAL", accent: "#E8A118" },
   { id: "vitality", label: "Vitality", slugs: ["mens-vitality-shot"], style: "rise", bg: "#173F2B", dark: true, ghost: "VITALITY", accent: "#C7832F" },
-  { id: "tea", label: "Tea", slugs: ["ginger-lemon-carrot-tea", "ginger-lemon-carrot-powder"], style: "steam", bg: "#F3EAD6", ghost: "SLOW", accent: "#E9772E" },
-  { id: "heritage", label: "Heritage", slugs: ["maheu", "muvhee"], style: "meet", bg: "#E6D2AA", ghost: "HERITAGE", accent: "#A86B2C" },
+  { id: "tea", label: "Tea", slugs: ["ginger-lemon-tea", "hibiscus-tea"], style: "steam", bg: "#F3EAD6", ghost: "SLOW", accent: "#E9A62E" },
+  { id: "heritage", label: "Heritage", slugs: ["maheu-traditional", "maheu-buttermilk"], style: "meet", bg: "#E6D2AA", ghost: "HERITAGE", accent: "#A86B2C" },
+  { id: "cans", label: "Cans 18+", slugs: ["orange-can", "cranberry-can"], style: "drop", bg: "#1F2550", dark: true, ghost: "CHEERS", accent: "#F2711C" },
 ];
 
 const ING_SLOTS = [
@@ -301,14 +303,19 @@ function Scene({
               href={`/shop/${primary.slug}`}
               className={buttonClasses({ variant: def.dark ? "sun" : "primary", size: "lg" })}
             >
-              <ButtonLabel>Explore this blend</ButtonLabel>
+              <ButtonLabel>{isAgeRestricted(primary) ? "Explore the cans" : "Explore this blend"}</ButtonLabel>
               <ArrowUpRight className="h-4 w-4" aria-hidden />
             </Link>
             <div className="flex items-center gap-3">
-              <PriceTag product={primary} className="text-lg" sample={samplePricing && variant?.price !== null} />
+              <PriceTag product={primary} className="text-lg" sample={samplePricing && isDevSamplePrice(variant?.id)} />
               <AddToCartButton product={primary} compact tone={def.dark ? "light" : "dark"} />
             </div>
           </div>
+          {isAgeRestricted(primary) && (
+            <p data-s="copy" className="mt-6 text-sm font-semibold opacity-90">
+              Contains alcohol (5.2% alc./vol.). 18+ only. Please enjoy responsibly.
+            </p>
+          )}
           {secondary && (
             <p data-s="copy" className="mt-6 text-sm opacity-80">
               Also in this family:{" "}

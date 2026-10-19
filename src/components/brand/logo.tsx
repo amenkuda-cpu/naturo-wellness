@@ -39,9 +39,13 @@ export function Logo({ className, priority = true }: { className?: string; prior
       width={644}
       height={626}
       preload={priority}
-      sizes="80px"
-      // `className` replaces the default header sizing (48px mobile, 62px desktop).
-      className={cn("w-auto select-none [filter:drop-shadow(0_2px_6px_rgba(23,49,38,0.28))]", className ?? "h-12 sm:h-[62px]")}
+      sizes="(min-width: 1024px) 140px, 120px"
+      // `className` replaces the default (compact header) sizing.
+      className={cn("w-auto select-none [filter:drop-shadow(0_3px_10px_rgba(23,49,38,0.3))]", className ?? LOGO_COMPACT)}
     />
   );
 }
+
+/** Header logo sizes: compact on solid headers, large over the homepage hero video. */
+export const LOGO_COMPACT = "h-14 sm:h-[68px]";
+export const LOGO_HERO = "h-[84px] sm:h-[112px] lg:h-[132px]";

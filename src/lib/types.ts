@@ -5,18 +5,20 @@
 
 export type CurrencyCode = "USD" | "ZWG" | "ZAR";
 
-export type CategoryId = "wellness-shots" | "traditional-favourites" | "teas-and-powders";
+export type CategoryId = "wellness-shots" | "traditional-favourites" | "teas-and-powders" | "naturo-cans";
 
 export interface Category {
   id: CategoryId;
   name: string;
   shortName: string;
   description: string;
+  /** Alcoholic range: shows an 18+ notice and needs age confirmation at checkout. */
+  ageRestricted?: boolean;
 }
 
 export type StockStatus = "in_stock" | "low_stock" | "out_of_stock" | "unknown";
 
-export type PackagingShape = "shot" | "tall" | "pouch";
+export type PackagingShape = "shot" | "tall" | "pouch" | "can";
 
 export interface ProductVariant {
   id: string;

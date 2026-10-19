@@ -1,11 +1,12 @@
 # Naturo Wellness: website & online shop
 
 A premium, animated e-commerce site for **Naturo Wellness**: natural wellness shots, traditional Zimbabwean
-favourites and herbal blends. Built with Next.js 16 (App Router, Cache Components), React 19, TypeScript,
+favourites, herbal teas and Naturo Cans (18+). Built with Next.js 16 (App Router, Cache Components), React 19, TypeScript,
 Tailwind CSS 4, GSAP + ScrollTrigger, Motion for React, Lenis and Supabase.
 
 > **Status in one line:** the storefront, cart, checkout, order tracking and admin are built and tested
-> end-to-end in development mode. **Before taking real orders** you must connect Supabase, set real prices,
+> end-to-end in development mode. **Before taking real orders** you must connect Supabase, replace the
+starting prices with Naturo's price list,
 > enable at least one payment method, fill in contact details and have the policy pages reviewed (see
 > [Launch checklist](#launch-checklist)).
 
@@ -112,7 +113,11 @@ tests/                 unit/ · e2e/
   has a small pause/play button in the bottom-left corner. To swap the film, replace that file (and
   `naturo-hero-poster.webp`). Component: `src/components/home/hero-video.tsx`.
 - **Logo:** `public/images/brand/naturo-wellness-logo.png` (the round badge with a transparent
-  surround) in the header; `src/app/icon.png` and `apple-icon.png` are the favicons.
+  surround) in the header: large over the homepage hero (`LOGO_HERO`), compact once the header turns
+  solid (`LOGO_COMPACT`, both in `src/components/brand/logo.tsx`). `src/app/icon.png` and
+  `apple-icon.png` are the favicons.
+- **Collections:** the homepage has spotlights for the herbal tea collection and Naturo Cans
+  (`src/components/home/collection-feature.tsx`) using the group photos in `public/images/collections/`.
 - **"Meet your daily goodness":** desktop pins one scrubbed master timeline; every scene reveals its colour
   field with a clip-path and enters with its own choreography (swing, soft focus, drop, tropical spin,
   rise, steam, two-bottle meet). Phones and reduced-motion visitors get stacked, fully readable scenes.
@@ -135,10 +140,25 @@ See [`.env.example`](.env.example) for every variable with comments. Key rules:
 
 ## Editing products & prices
 
-**Product content** (names, descriptions, art direction, FAQs) lives in **`src/data/products.ts`**, the single
-source used by every page. Fields such as `ingredients`, `nutrition`, `allergens`, `size`,
-`preparation` and `verifiedBenefits` are intentionally empty: fill them in **only from the approved label**.
-`motifs` are decorative and never shown as ingredients.
+**Product content** (names, descriptions, sizes, starting prices, art direction, FAQs) lives in
+**`src/data/products.ts`**, the single source used by every page. `size` comes from the printed label.
+Fields such as `ingredients`, `nutrition`, `allergens` and `verifiedBenefits` are intentionally empty: fill
+them in **only from the approved label**. `motifs` are decorative and never shown as ingredients.
+
+**Starting prices (USD)** were set from Zimbabwean market research in October 2026 and are meant to be
+replaced with Naturo's price list (edit `price` in cents per product):
+
+| Range | Products | Starting price |
+| --- | --- | --- |
+| Wellness Shots, 100 ml | Ginger, Glow, Hibiscus, Pineapple · Men's Vitality | $2.00 · $2.50 |
+| Maheu, 500 ml | Traditional, Buttermilk | $1.00 |
+| Herbal Teas, 20 bags / 40 g | Ginger Lemon, Hibiscus, Green Focus, Muvheyi, Carrot · Sunset Glow · Indongo Bloom | $3.50 · $4.00 · $4.50 |
+| Naturo Cans, 330 ml, 5.2% alc./vol. | Orange, Cranberry, Apple | $1.50 |
+| Not yet priced | Muvhee, Ginger Lemon & Carrot Instant Powder | "Price coming soon" |
+
+**Age-restricted products:** categories with `ageRestricted: true` (Naturo Cans) show an 18+ badge and
+notice, and checkout requires "I confirm I am 18 or older". The server refuses the order without it
+(`placeOrder` in `src/lib/orders/service.ts`) and records the confirmation in the order notes.
 
 **Prices & stock:**
 - With Supabase connected: use **Admin → Products** (price, stock status, quantity, enable/disable).
@@ -150,24 +170,16 @@ source used by every page. Fields such as `ingredients`, `nutrition`, `allergens
 Adding a product: add an entry to `seeds` in `products.ts`, add its image, then (with Supabase) run
 `npm run db:seed-file` and apply the new rows, or insert them via the Supabase dashboard.
 
-## Replacing placeholder images
+## Product photos
 
-All bottle/pouch images are **temporary artwork** with a visible "PLACEHOLDER LABEL"; they are not approved
-packaging. To replace one:
-
-1. Export the final photo (ideally a transparent-background WebP or PNG, at least 900 × 1350 px).
-2. Save it over the matching file in `public/images/products/`:
-   `ginger-shot-placeholder.webp`, `glow-shot-…`, `hibiscus-shot-…`, `pineapple-shot-…`,
-   `mens-vitality-…`, `maheu-…`, `muvhee-…`, `herbal-tea-…`, `instant-powder-…`
-   (or use a new filename and update `image()` in `products.ts`).
-3. Set `placeholder: false` for that product (removes the "Placeholder artwork" notice).
-4. If the product hangs from a line (hero, showcase, CTA), adjust `HANG_POINT` in
-   `src/components/visual/hanging-bottle.tsx` so the line meets the cap.
+Product photos are transparent cut-outs in `public/images/products/<photo>.webp`, 900 × 1350 px, with the
+pack positioned to match `HANG_POINT` in `src/components/visual/hanging-bottle.tsx` (shots start 168 px
+from the top and are 1084 px tall; Maheu bottles 234 / 1032; pouches 218 / 1034; cans 200 / 1060). Set
+`photo` on the product in `products.ts`. Muvhee and the Instant Powder still use temporary artwork
+(`*-placeholder.webp`, flagged "Placeholder artwork"); add their photos the same way when ready.
 
 Images are rendered with `next/image` inside fixed-ratio boxes using `object-contain`, so a differently
-proportioned photo still fits. Ingredient art lives in `public/images/ingredients/`. The logo is a vector
-redrawn from the supplied reference (`src/components/brand/logo.tsx`, `src/app/icon.svg`); replace it with
-the official vector when available.
+proportioned photo still fits. Ingredient art lives in `public/images/ingredients/`.
 
 ## Database (Supabase)
 
@@ -297,8 +309,9 @@ transactions and webhooks, real device testing on iOS Safari.
 ## Launch checklist
 
 - [ ] Supabase connected, migration + seed applied, first admin created
-- [ ] Real prices, sizes and stock set; ingredient lists, allergens and storage copied from approved labels
-- [ ] Final product photography and official logo vector in place (`placeholder: false`)
+- [ ] Starting prices replaced with Naturo's price list; stock set; ingredient lists, allergens and storage copied from approved labels
+- [ ] Photos for Muvhee and the Instant Powder
+- [ ] Liquor licence confirmed for selling Naturo Cans online, and the 18+ wording reviewed
 - [ ] Delivery zones & fees and collection details confirmed
 - [ ] At least one payment method enabled; Paynow tested end-to-end in test mode
 - [ ] Contact details & social links set in env

@@ -21,7 +21,7 @@ test.describe("Cart & checkout", () => {
     await expect(drawer).toBeVisible();
     await expect(drawer.getByText("Ginger Shot")).toBeVisible();
     await drawer.getByRole("button", { name: "Increase quantity" }).click();
-    await expect(drawer.getByText("$5.00").first()).toBeVisible();
+    await expect(drawer.getByText("$4.00").first()).toBeVisible();
     await drawer.getByRole("button", { name: "Close cart" }).click();
     await expect(drawer).toBeHidden();
 
@@ -56,13 +56,13 @@ test.describe("Cart & checkout", () => {
     await expect(page.getByText("Code DEVTEST10 applied.")).toBeVisible();
 
     await page.check("#acceptTerms");
-    await expect(page.getByRole("button", { name: /Place order · \$4\.50/ })).toBeVisible();
+    await expect(page.getByRole("button", { name: /Place order · \$3\.60/ })).toBeVisible();
     await page.getByRole("button", { name: /Place order/ }).click();
 
     await expect(page).toHaveURL(/\/order\/[0-9a-f-]{36}\?t=/, { timeout: 20_000 });
     await expect(page.getByRole("heading", { level: 1, name: /Thank you, Rudo/ })).toBeVisible();
     await expect(page.getByText("Pay on delivery / collection")).toBeVisible();
-    await expect(page.getByText("$4.50").last()).toBeVisible();
+    await expect(page.getByText("$3.60").last()).toBeVisible();
 
     // Cart is cleared after ordering.
     const stored = await page.evaluate(() => localStorage.getItem("naturo.cart.v1"));
