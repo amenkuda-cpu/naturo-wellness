@@ -105,13 +105,10 @@ tests/                 unit/ · e2e/
 - **Concept: "Botanical Plates".** Products are presented like suspended specimens in a sunlit botanical
   archive: bottles hang from fine lines, numbered plates, editorial type (Bricolage Grotesque + Instrument
   Serif + Outfit), saturated colour fields balanced with cream.
-- **Hero:** a cluster of seven SVG vine stems bursts from the bottom-right corner (~5.5 s), staggered
-  and growing at different speeds: some shoot to the top, some sweep wide to the left, one hooks back
-  over the others. Branches, sub-branches, curling tendrils and ~590 leaves spawn in waves behind the
-  growing tips (stepped-width stroked segments + stroke-dashoffset; timings precomputed per element).
-  Stems sit in back / mid / front depth layers (background lighter and softly blurred once grown); each
-  stem is its own composited layer swaying slightly out of sync. The bottles then drop in and hang from
-  the main arch. Reduced motion shows it fully grown. Vine: `src/components/home/hero-vine.tsx`.
+- **Hero:** headline and calls to action beside the Naturo product film
+  (`public/videos/naturo-hero.mp4`, 1280×720, muted, looping, with a poster frame). It pauses while
+  off-screen, does not autoplay for reduced-motion visitors, and has a pause/play button. To swap the
+  film, replace that file (and `naturo-hero-poster.webp`). Component: `src/components/home/hero-video.tsx`.
 - **"Meet your daily goodness":** desktop pins one scrubbed master timeline; every scene reveals its colour
   field with a clip-path and enters with its own choreography (swing, soft focus, drop, tropical spin,
   rise, steam, two-bottle meet). Phones and reduced-motion visitors get stacked, fully readable scenes.

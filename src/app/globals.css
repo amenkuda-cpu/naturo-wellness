@@ -197,16 +197,6 @@
   }
 }
 
-/* Hero vine depth: background stems are softly blurred once fully grown (the blur
-   is held off during growth, when those layers repaint every frame). */
-.vine-depth-blur {
-  filter: blur(1.6px);
-  transition: filter 0.9s ease;
-}
-.motion-ok [data-hero]:not([data-grown]) .vine-depth-blur {
-  filter: none;
-}
-
 /* Lenis */
 html.lenis,
 html.lenis body {
