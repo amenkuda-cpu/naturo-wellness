@@ -5,9 +5,10 @@ import { useEffect, useRef, useState } from "react";
 import { cn } from "@/lib/cn";
 
 /**
- * The hero product film: muted, looping, inline. It pauses itself while
- * off-screen (saves battery and CPU), never autoplays for visitors who prefer
- * reduced motion, and always offers a pause/play control.
+ * The hero product film, shown full-bleed behind the hero: muted, looping,
+ * inline (iOS needs all three to autoplay). It pauses itself while off-screen
+ * (saves battery and CPU), never autoplays for visitors who prefer reduced
+ * motion, and offers a small pause/play control.
  */
 export function HeroVideo({ className }: { className?: string }) {
   const ref = useRef<HTMLVideoElement>(null);
@@ -18,6 +19,9 @@ export function HeroVideo({ className }: { className?: string }) {
   useEffect(() => {
     const v = ref.current;
     if (!v) return;
+    // React doesn't reflect `muted` as an attribute; iOS Safari checks it before autoplaying.
+    v.muted = true;
+    v.defaultMuted = true;
     if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) {
       userPaused.current = true;
       v.pause();
@@ -43,10 +47,10 @@ export function HeroVideo({ className }: { className?: string }) {
   };
 
   return (
-    <div className={cn("relative overflow-hidden rounded-[1.5rem] bg-sun shadow-[0_30px_80px_-30px_rgba(23,49,38,0.45)] sm:rounded-[2rem]", className)}>
+    <>
       <video
         ref={ref}
-        className="block aspect-video h-auto w-full object-cover"
+        className={cn("absolute inset-0 -z-10 h-full w-full bg-sun object-cover", className)}
         src="/videos/naturo-hero.mp4"
         poster="/videos/naturo-hero-poster.webp"
         autoPlay
@@ -61,11 +65,11 @@ export function HeroVideo({ className }: { className?: string }) {
       <button
         type="button"
         onClick={toggle}
-        aria-label={playing ? "Pause video" : "Play video"}
-        className="absolute bottom-3 right-3 grid h-10 w-10 place-items-center rounded-full bg-forest/70 text-warm backdrop-blur transition-colors hover:bg-forest sm:bottom-4 sm:right-4"
+        aria-label={playing ? "Pause background video" : "Play background video"}
+        className="absolute bottom-4 left-4 z-10 grid h-8 w-8 place-items-center rounded-full bg-forest/35 text-warm/90 opacity-70 backdrop-blur-sm transition hover:bg-forest/70 hover:opacity-100 focus-visible:opacity-100 sm:bottom-5 sm:left-5"
       >
-        {playing ? <Pause className="h-4 w-4" aria-hidden /> : <Play className="h-4 w-4" aria-hidden />}
+        {playing ? <Pause className="h-3 w-3" aria-hidden /> : <Play className="h-3 w-3" aria-hidden />}
       </button>
-    </div>
+    </>
   );
 }

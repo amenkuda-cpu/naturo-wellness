@@ -1,9 +1,9 @@
+import Image from "next/image";
 import { cn } from "@/lib/cn";
 
 /**
- * Naturo mark + wordmark, redrawn as a vector from the supplied brand
- * reference (bowl, sprouting leaves, base bar). Swap in the official vector
- * artwork when available: keep the same component API.
+ * The small Naturo leaf-bowl mark, used as a decorative accent around the site
+ * (eyebrows, footer). The official logo is <Logo /> below.
  */
 export function NaturoMark({ className, title }: { className?: string; title?: string }) {
   return (
@@ -24,17 +24,24 @@ export function NaturoMark({ className, title }: { className?: string; title?: s
   );
 }
 
-export function Logo({ className, tone = "dark" }: { className?: string; tone?: "dark" | "light" }) {
+/**
+ * The official Naturo Wellness logo (round badge), from
+ * /public/images/brand/naturo-wellness-logo.png (644 × 626, transparent
+ * surround, so it stays sharp on retina screens at header sizes).
+ * Shown at its original proportions; a soft drop shadow keeps the white badge
+ * legible over the hero video and light backgrounds.
+ */
+export function Logo({ className, priority = true }: { className?: string; priority?: boolean }) {
   return (
-    <span
-      className={cn(
-        "inline-flex items-center gap-2 font-sans font-semibold tracking-[-0.03em]",
-        tone === "dark" ? "text-forest" : "text-warm",
-        className,
-      )}
-    >
-      <NaturoMark className="h-[1.35em] w-[1.35em] -translate-y-[0.06em]" />
-      <span className="text-[1.15em] leading-none">Naturo</span>
-    </span>
+    <Image
+      src="/images/brand/naturo-wellness-logo.png"
+      alt="Naturo Wellness"
+      width={644}
+      height={626}
+      preload={priority}
+      sizes="80px"
+      // `className` replaces the default header sizing (48px mobile, 62px desktop).
+      className={cn("w-auto select-none [filter:drop-shadow(0_2px_6px_rgba(23,49,38,0.28))]", className ?? "h-12 sm:h-[62px]")}
+    />
   );
 }

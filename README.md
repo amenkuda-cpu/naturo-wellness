@@ -105,10 +105,14 @@ tests/                 unit/ · e2e/
 - **Concept: "Botanical Plates".** Products are presented like suspended specimens in a sunlit botanical
   archive: bottles hang from fine lines, numbered plates, editorial type (Bricolage Grotesque + Instrument
   Serif + Outfit), saturated colour fields balanced with cream.
-- **Hero:** headline and calls to action beside the Naturo product film
-  (`public/videos/naturo-hero.mp4`, 1280×720, muted, looping, with a poster frame). It pauses while
-  off-screen, does not autoplay for reduced-motion visitors, and has a pause/play button. To swap the
-  film, replace that file (and `naturo-hero-poster.webp`). Component: `src/components/home/hero-video.tsx`.
+- **Hero:** the Naturo product film fills the whole viewport behind the transparent nav and the
+  headline (`public/videos/naturo-hero.mp4`, the original 1280×720 upload remuxed without re-encoding;
+  muted, looping, inline, with a poster frame). There is no overlay on the film; only a soft light glow
+  sits behind the copy. It pauses while off-screen, does not autoplay for reduced-motion visitors, and
+  has a small pause/play button in the bottom-left corner. To swap the film, replace that file (and
+  `naturo-hero-poster.webp`). Component: `src/components/home/hero-video.tsx`.
+- **Logo:** `public/images/brand/naturo-wellness-logo.png` (the round badge with a transparent
+  surround) in the header; `src/app/icon.png` and `apple-icon.png` are the favicons.
 - **"Meet your daily goodness":** desktop pins one scrubbed master timeline; every scene reveals its colour
   field with a clip-path and enters with its own choreography (swing, soft focus, drop, tropical spin,
   rise, steam, two-bottle meet). Phones and reduced-motion visitors get stacked, fully readable scenes.

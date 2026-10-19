@@ -1,6 +1,6 @@
 "use client";
 
-import { ArrowDown, ArrowRight } from "lucide-react";
+import { ArrowRight } from "lucide-react";
 import Link from "next/link";
 import { useRef } from "react";
 import { NaturoMark } from "@/components/brand/logo";
@@ -44,8 +44,7 @@ export function Hero() {
           .timeline({ defaults: { ease: "expo.out" } })
           .fromTo(q("[data-line-mask] span span"), { yPercent: 115, rotate: 6 }, { yPercent: 0, rotate: 0, duration: 1.1, stagger: 0.026 }, 0.15)
           .fromTo(q("[data-fade]"), { y: 26, autoAlpha: 0 }, { y: 0, autoAlpha: 1, duration: 1, stagger: 0.08 }, 0.5)
-          .fromTo(q("[data-cta]"), { y: 22, autoAlpha: 0 }, { y: 0, autoAlpha: 1, duration: 0.9, stagger: 0.08 }, 0.65)
-          .fromTo(q("[data-video]"), { y: 30, autoAlpha: 0 }, { y: 0, autoAlpha: 1, duration: 1.2 }, 0.2);
+          .fromTo(q("[data-cta]"), { y: 22, autoAlpha: 0 }, { y: 0, autoAlpha: 1, duration: 0.9, stagger: 0.08 }, 0.65);
       });
     },
     { scope: root },
@@ -56,34 +55,35 @@ export function Hero() {
       ref={root}
       data-hero
       aria-labelledby="hero-title"
-      className="grain relative isolate overflow-hidden bg-[#F7EFD6] lg:flex lg:min-h-[100svh] lg:items-center"
+      className="relative isolate flex h-[100svh] min-h-[34rem] w-full items-end overflow-hidden bg-sun"
     >
-      {/* Ambient colour field */}
-      <div
-        aria-hidden
-        className="absolute inset-0 -z-20 bg-[radial-gradient(120%_80%_at_70%_30%,#FBF2C9_0%,#F7EFD6_45%,#EFE3C0_100%)]"
-      />
+      {/* Full-bleed product film. No overlay: it stays sharp and bright. */}
+      <HeroVideo />
 
-      <div className="container-x grid w-full items-center gap-8 pb-12 pt-24 sm:pt-28 lg:grid-cols-12 lg:gap-12 lg:pb-20 lg:pt-28">
-        {/* ── Copy ── */}
-        <div className="lg:col-span-5">
-          <p data-fade className="hero-pre-lg eyebrow flex items-center gap-3 text-forest/80">
+      <div className="container-x relative w-full pb-16 pt-24 sm:pb-20 lg:pb-[clamp(3rem,8vh,6rem)]">
+        <div className="relative max-w-[34rem] lg:max-w-[38rem]">
+          {/* A soft, light glow behind the copy only, for contrast. */}
+          <div
+            aria-hidden
+            className="pointer-events-none absolute -inset-x-16 -inset-y-14 -z-10 bg-[radial-gradient(closest-side,rgba(255,253,245,0.86),rgba(255,253,245,0.6)_55%,rgba(255,253,245,0)_100%)] sm:-inset-x-24"
+          />
+          <p data-fade className="hero-pre-lg eyebrow flex items-center gap-3 text-forest">
             <NaturoMark className="h-5 w-5 text-botanical" />
             Rooted in nature. Made for everyday.
           </p>
-          <h1 id="hero-title" className="mt-4 text-forest lg:mt-5">
+          <h1 id="hero-title" className="mt-3 text-forest [text-shadow:0_1px_18px_rgba(255,253,245,0.55)] lg:mt-4">
             <span className="sr-only">Feel good. Naturally.</span>
-            <SplitLine text="FEEL GOOD." className="hero-pre-lg display text-[clamp(3.6rem,15.5vw,10.5rem)] lg:text-[clamp(3.6rem,6.4vw,8rem)]" />
+            <SplitLine text="FEEL GOOD." className="hero-pre-lg display text-[clamp(3.2rem,14vw,6rem)] lg:text-[clamp(3.6rem,5.6vw,7rem)]" />
             <SplitLine
               text="NATURALLY."
-              className="hero-pre-lg serif-accent -mt-[0.08em] text-[clamp(3.7rem,15.8vw,10.8rem)] leading-[0.9] text-botanical lg:text-[clamp(3.7rem,6.6vw,8.3rem)]"
+              className="hero-pre-lg serif-accent -mt-[0.08em] text-[clamp(3.3rem,14.3vw,6.2rem)] leading-[0.9] text-botanical lg:text-[clamp(3.7rem,5.8vw,7.2rem)]"
             />
           </h1>
-          <p data-fade className="hero-pre-lg mt-4 max-w-[28rem] text-[0.95rem] leading-relaxed text-ink/80 sm:text-lg lg:mt-6">
+          <p data-fade className="hero-pre-lg mt-3 max-w-[28rem] text-[0.95rem] font-medium leading-relaxed text-ink sm:text-lg lg:mt-5">
             Everyday wellness, rooted in nature. Discover natural shots, traditional favourites and herbal blends, proudly
             made in Zimbabwe.
           </p>
-          <div className="mt-6 flex flex-wrap items-center gap-1 sm:gap-3 lg:mt-8">
+          <div className="mt-5 flex flex-wrap items-center gap-1 sm:gap-3 lg:mt-7">
             <div data-cta className="hero-pre-lg">
               <ButtonLink href="/shop" size="lg" icon={<ArrowRight className="h-4 w-4" aria-hidden />}>
                 Shop Naturo
@@ -92,26 +92,12 @@ export function Hero() {
             <div data-cta className="hero-pre-lg">
               <Link
                 href="/our-story"
-                className="group/btn inline-flex h-14 items-center gap-2 rounded-full px-3 text-[0.72rem] font-semibold uppercase tracking-[0.14em] text-forest transition-colors hover:bg-forest/5 sm:px-5 sm:text-[0.76rem]"
+                className="group/btn inline-flex h-14 items-center gap-2 rounded-full px-3 text-[0.72rem] font-semibold uppercase tracking-[0.14em] text-forest transition-colors hover:bg-warm/40 sm:px-5 sm:text-[0.76rem]"
               >
                 <ButtonLabel>Discover our story</ButtonLabel>
               </Link>
             </div>
           </div>
-        </div>
-
-        {/* ── Product film ── */}
-        <div data-video className="hero-pre-lg lg:col-span-7">
-          <HeroVideo />
-        </div>
-      </div>
-
-      {/* Bottom rail */}
-      <div aria-hidden className="pointer-events-none absolute inset-x-0 bottom-0 z-10 hidden lg:block">
-        <div className="container-x flex items-center pb-6 text-forest/70">
-          <span data-fade className="hero-pre-lg eyebrow flex items-center gap-3">
-            <ArrowDown className="h-3.5 w-3.5 animate-bounce motion-reduce:animate-none" /> Scroll to explore
-          </span>
         </div>
       </div>
     </section>

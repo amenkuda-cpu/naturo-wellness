@@ -20,7 +20,7 @@ export default async function SiteLayout({ children }: { children: React.ReactNo
     "@type": "Organization",
     name: siteConfig.name,
     url: siteConfig.url,
-    logo: `${siteConfig.url}/icon.svg`,
+    logo: `${siteConfig.url}/images/brand/naturo-wellness-logo.png`,
     ...(siteConfig.contact.email ? { email: siteConfig.contact.email } : {}),
     ...(siteConfig.contact.phone ? { telephone: siteConfig.contact.phone } : {}),
     sameAs: Object.values(siteConfig.social).filter(Boolean),

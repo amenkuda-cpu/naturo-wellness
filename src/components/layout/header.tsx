@@ -86,8 +86,8 @@ export function Header({ showAccount }: { showAccount: boolean }) {
         )}
       >
         <div className="container-x flex h-16 items-center justify-between gap-4 sm:h-20">
-          <Link href="/" aria-label="Naturo Wellness home" className="relative z-[71] text-[1.35rem]">
-            <Logo tone={menuOpen ? "light" : "dark"} />
+          <Link href="/" aria-label="Naturo Wellness home" className="relative z-[71] flex items-center">
+            <Logo />
           </Link>
 
           <nav aria-label="Main" className="hidden lg:block">
@@ -101,7 +101,8 @@ export function Header({ showAccount }: { showAccount: boolean }) {
                       aria-current={active ? "page" : undefined}
                       className={cn(
                         "relative rounded-full px-4 py-2 text-[0.72rem] font-semibold uppercase tracking-[0.16em] transition-colors",
-                        active ? "text-forest" : "text-ink/70 hover:text-forest",
+                        active ? "text-forest" : solid ? "text-ink/70 hover:text-forest" : "text-forest/90 hover:text-forest",
+                        !solid && "[text-shadow:0_1px_10px_rgba(255,253,245,0.7)]",
                       )}
                     >
                       {item.label}
@@ -118,7 +119,12 @@ export function Header({ showAccount }: { showAccount: boolean }) {
             </ul>
           </nav>
 
-          <div className="relative z-[71] flex items-center gap-1 sm:gap-2">
+          <div
+            className={cn(
+              "relative z-[71] flex items-center gap-1 sm:gap-2",
+              !solid && !menuOpen && "[filter:drop-shadow(0_1px_6px_rgba(255,253,245,0.7))]",
+            )}
+          >
             {showAccount && (
               <Link
                 href="/account"

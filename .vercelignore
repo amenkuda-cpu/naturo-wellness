@@ -1,0 +1,7 @@
+# Local-only files: never upload to Vercel
+.env*.local
+.env.local
+.naturo-dev
+.netlify
+test-results
+playwright-report

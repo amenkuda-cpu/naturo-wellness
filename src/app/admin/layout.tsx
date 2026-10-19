@@ -24,7 +24,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
       <header className="sticky top-0 z-40 border-b border-forest/10 bg-warm/90 backdrop-blur">
         <div className="mx-auto flex h-16 max-w-7xl items-center gap-6 px-4 sm:px-6">
           <Link href="/admin" className="text-lg" aria-label="Admin home">
-            <Logo />
+            <Logo className="h-11" />
           </Link>
           <span className="rounded-full bg-forest px-2.5 py-0.5 text-[0.65rem] font-semibold uppercase tracking-[0.14em] text-warm">Admin</span>
           <nav aria-label="Admin" className="no-scrollbar ml-auto flex gap-1 overflow-x-auto">
