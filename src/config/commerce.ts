@@ -48,7 +48,6 @@ export const devSampleZones: DeliveryZone[] = [
  */
 export const devSamplePrices: Record<string, number> = {
   // Muvhee intentionally left unpriced to exercise the "Price coming soon" state.
-  "ginger-lemon-carrot-powder-standard": 400,
 };
 
 /** True when a variant's price came from `devSamplePrices` (labelled "Sample price" in development). */

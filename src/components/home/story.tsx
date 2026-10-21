@@ -1,4 +1,3 @@
-import { NaturoMark } from "@/components/brand/logo";
 import { Reveal } from "@/components/motion/reveal";
 import { MotifImage, ProductImage } from "@/components/product/product-image";
 import { ButtonLink } from "@/components/ui/button";
@@ -47,27 +46,30 @@ export function Story({ withLink = true }: { withLink?: boolean }) {
 
         {/* Copy */}
         <div className="lg:col-span-6 lg:col-start-7">
-          <p data-reveal className="eyebrow flex items-center gap-3 text-sun">
-            <NaturoMark className="h-5 w-5" /> Our story
-          </p>
+          <p data-reveal className="eyebrow text-sun">Our story</p>
           <h2 id="story-title" data-reveal className="display mt-6 text-[clamp(2.6rem,6.5vw,5.6rem)]">
             Rooted in nature. <span className="serif-accent normal-case text-citrus">Proudly</span> Zimbabwean.
           </h2>
           <div className="mt-10 space-y-5 text-lg leading-relaxed text-warm/80">
             <p data-reveal>
-              At Naturo Wellness, we believe everyday wellness should feel natural, familiar and accessible.
+              Naturo Wellness began with very little. Sharon had a home kitchen, a few ingredients she
+              trusted and a belief she could not shake: that the flavours she grew up with deserved a place on every table.
             </p>
             <p data-reveal>
-              We bring together plant-inspired blends, traditional favourites and the convenience modern life demands.
+              The recipes took patience. She tested, tasted and started again more times than she can count, and a blend
+              was only ready when it felt right to the people she loved most. Her family were her first critics and her
+              loudest supporters.
             </p>
             <p data-reveal>
-              From a quick wellness shot to a comforting cup of herbal tea, our range celebrates ingredients, flavours and
-              traditions that feel close to home.
+              That care is still in every bottle and every pouch. Sharon makes each drink the way she would make it for her
+              own children, with honest ingredients and the kind of attention that cannot be rushed. Her community shaped
+              Naturo, and everything she builds is made to nourish the people she serves.
             </p>
           </div>
           <blockquote data-reveal className="mt-10 border-l-2 border-sun pl-6">
             <p className="serif-accent text-2xl leading-snug text-warm lg:text-3xl">
-              Our mission is simple: to make everyday wellness natural, affordable and proudly Zimbabwean.
+              Now the dream is bigger than one kitchen: to grow Naturo Wellness into a trusted African wellness brand,
+              rooted in Zimbabwe and made for everyday life.
             </p>
           </blockquote>
           {withLink && (

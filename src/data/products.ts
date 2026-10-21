@@ -38,9 +38,8 @@ export const categories: Category[] = [
   {
     id: "naturo-cans",
     name: "Naturo Cans",
-    shortName: "Cans (18+)",
-    description: "Fruity 5.2% alc./vol. drinks in 330 ml cans, best served with friends. For adults 18 and over.",
-    ageRestricted: true,
+    shortName: "Cans",
+    description: "Fruity drinks in ice-cold 330 ml cans, best served with friends.",
   },
 ];
 
@@ -99,15 +98,6 @@ const commonFaqs = (name: string) => [
   },
 ];
 
-const canFaqs = (name: string) => [
-  {
-    question: `Who can buy ${name}?`,
-    answer:
-      "Naturo Cans contain alcohol (5.2% alc./vol.). They are only sold to adults aged 18 and over, and we may ask for ID on delivery or collection.",
-  },
-  ...commonFaqs(name),
-];
-
 interface Seed {
   id: string;
   name: string;
@@ -135,7 +125,7 @@ interface Seed {
 
 const TEA_SIZE = "20 tea bags · 40 g";
 const TEA_PREP = "Steep one tea bag in a cup of freshly boiled water for 3–5 minutes.";
-const CAN_SIZE = "330 ml · 5.2% alc./vol.";
+const CAN_SIZE = "330 ml";
 
 const seeds: Seed[] = [
   /* ───────────── Wellness shots (100 ml) ───────────── */
@@ -457,29 +447,10 @@ const seeds: Seed[] = [
     motifs: ["carrot", "tea-leaf", "leaf", "droplet"],
     theme: { accent: "#EE7A22", deep: "#6A320C", tint: "#FBE2CC" },
     mood: "Mellow. Sweet. Earthy.",
-    related: ["ginger-lemon-tea", "sunset-glow-tea", "ginger-lemon-carrot-powder"],
-  },
-  {
-    id: "ginger-lemon-carrot-powder",
-    name: "Ginger, Lemon & Carrot Instant Powder",
-    file: "instant-powder",
-    category: "teas-and-powders",
-    packaging: "pouch",
-    kind: "pouch",
-    price: null,
-    shortDescription: "A convenient powdered blend designed for easy preparation.",
-    fullDescription: [
-      "Ginger, lemon and carrot in a convenient instant powder.",
-      "Designed for easy preparation, so a warm cup is only moments away.",
-    ],
-    tags: ["tea-moment", "convenient", "citrus"],
-    motifs: ["lemon-slice", "carrot", "ginger", "tea-leaf"],
-    theme: { accent: "#367A45", deep: "#173F2B", tint: "#F8F0C6" },
-    mood: "Quick. Warm. Easy.",
-    related: ["ginger-lemon-tea", "carrot-tea", "ginger-shot"],
+    related: ["ginger-lemon-tea", "sunset-glow-tea", "muvheyi-tea"],
   },
 
-  /* ───────────── Naturo Cans (330 ml · 5.2% alc./vol. · 18+) ───────────── */
+  /* ───────────── Naturo Cans (330 ml) ───────────── */
   {
     id: "orange-can",
     name: "Naturo Orange",
@@ -489,11 +460,8 @@ const seeds: Seed[] = [
     kind: "can",
     size: CAN_SIZE,
     price: 150,
-    shortDescription: "Juicy orange flavour, 5.2% alc./vol. Best served with friends. 18+ only.",
-    fullDescription: [
-      "Bright, juicy orange in an ice-cold 330 ml can. 5.2% alc./vol.",
-      "Best served with friends. Please enjoy responsibly. Not for sale to persons under 18.",
-    ],
+    shortDescription: "Juicy orange flavour in an ice-cold can. Best served with friends.",
+    fullDescription: ["Bright, juicy orange in an ice-cold 330 ml can.", "Best served with friends."],
     featured: true,
     tags: ["social", "citrus", "chilled"],
     motifs: ["orange-slice", "droplet", "leaf"],
@@ -510,11 +478,8 @@ const seeds: Seed[] = [
     kind: "can",
     size: CAN_SIZE,
     price: 150,
-    shortDescription: "Tart, berry-bright cranberry flavour, 5.2% alc./vol. Best served with friends. 18+ only.",
-    fullDescription: [
-      "Tart, berry-bright cranberry in an ice-cold 330 ml can. 5.2% alc./vol.",
-      "Best served with friends. Please enjoy responsibly. Not for sale to persons under 18.",
-    ],
+    shortDescription: "Tart, berry-bright cranberry flavour in an ice-cold can. Best served with friends.",
+    fullDescription: ["Tart, berry-bright cranberry in an ice-cold 330 ml can.", "Best served with friends."],
     tags: ["social", "berry", "chilled"],
     motifs: ["hibiscus-petal", "droplet", "leaf"],
     theme: { accent: "#D7245A", deep: "#4A0F2A", tint: "#F9D3DF", dark: true },
@@ -530,11 +495,8 @@ const seeds: Seed[] = [
     kind: "can",
     size: CAN_SIZE,
     price: 150,
-    shortDescription: "Crisp green apple flavour, 5.2% alc./vol. Best served with friends. 18+ only.",
-    fullDescription: [
-      "Crisp, green apple in an ice-cold 330 ml can. 5.2% alc./vol.",
-      "Best served with friends. Please enjoy responsibly. Not for sale to persons under 18.",
-    ],
+    shortDescription: "Crisp green apple flavour in an ice-cold can. Best served with friends.",
+    fullDescription: ["Crisp, green apple in an ice-cold 330 ml can.", "Best served with friends."],
     tags: ["social", "crisp", "chilled"],
     motifs: ["lime-slice", "droplet", "leaf"],
     theme: { accent: "#6CC234", deep: "#1E4A1A", tint: "#E5F4D4" },
@@ -566,7 +528,7 @@ export const products: Product[] = seeds.map((s) => ({
   nutrition: null,
   verifiedBenefits: [],
   relatedSlugs: s.related,
-  faqs: categoryById(s.category).ageRestricted ? canFaqs(s.name) : commonFaqs(s.name),
+  faqs: commonFaqs(s.name),
   motifs: s.motifs,
   theme: s.theme,
   mood: s.mood,

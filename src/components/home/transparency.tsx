@@ -2,7 +2,7 @@
 
 import { AnimatePresence, motion } from "motion/react";
 import { useState } from "react";
-import { NaturoMark } from "@/components/brand/logo";
+import { Logo } from "@/components/brand/logo";
 import { cn } from "@/lib/cn";
 
 const pillars = [
@@ -70,7 +70,7 @@ export function Transparency() {
             <div className="relative mx-auto mt-6 aspect-[4/5] max-w-md rounded-[2rem] bg-cream p-6 shadow-[inset_0_0_0_1px_rgba(24,49,38,0.08)]">
               {/* Stylised label */}
               <div className="relative flex h-full flex-col items-center rounded-2xl border-2 border-dashed border-forest/20 bg-warm px-6 py-8 text-center">
-                <NaturoMark className="h-10 w-10 text-forest" />
+                <Logo priority={false} className="h-12" />
                 <p className="mt-2 text-sm font-semibold text-forest">Naturo</p>
                 <p className="serif-accent mt-3 text-3xl text-forest">Product name</p>
                 <div className="mt-6 grid w-full grid-cols-2 gap-4 text-left">

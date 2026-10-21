@@ -1,6 +1,5 @@
 import { Suspense } from "react";
 import { CartDrawer } from "@/components/cart/cart-drawer";
-import { DevNotice } from "@/components/layout/dev-notice";
 import { Footer } from "@/components/layout/footer";
 import { Header } from "@/components/layout/header";
 import { HeaderFallback } from "@/components/layout/header-fallback";
@@ -41,7 +40,6 @@ export default async function SiteLayout({ children }: { children: React.ReactNo
       <Suspense fallback={null}>
         <CartDrawer />
       </Suspense>
-      <DevNotice samplePricing={settings.samplePricing} dataSource={settings.dataSource} />
     </StoreProvider>
   );
 }

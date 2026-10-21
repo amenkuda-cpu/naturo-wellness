@@ -14,6 +14,8 @@ const nextConfig: NextConfig = {
   cacheComponents: true,
   partialPrefetching: true,
   poweredByHeader: false,
+  // No Next.js dev-tools badge over the page (keeps local reviews and recordings clean).
+  devIndicators: false,
   images: {
     formats: ["image/avif", "image/webp"],
     qualities: [75, 85],

@@ -1,6 +1,6 @@
 import { cacheLife } from "next/cache";
 import Link from "next/link";
-import { NaturoMark } from "@/components/brand/logo";
+import { Logo } from "@/components/brand/logo";
 import { siteConfig } from "@/config/site";
 import { categories } from "@/data/products";
 
@@ -45,7 +45,7 @@ export function Footer() {
     <footer className="cv-auto relative isolate overflow-hidden bg-forest text-warm">
       <div className="container-x grid gap-12 pb-10 pt-20 lg:grid-cols-12 lg:pt-28">
         <div className="lg:col-span-4">
-          <NaturoMark className="h-14 w-14 text-sun" />
+          <Logo priority={false} className="h-20 sm:h-24" />
           <p className="serif-accent mt-6 max-w-sm text-3xl leading-tight text-citrus">
             Everyday wellness, rooted in nature. Proudly Zimbabwean.
           </p>

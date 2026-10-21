@@ -3,7 +3,6 @@
 import { ArrowRight } from "lucide-react";
 import Link from "next/link";
 import { useRef } from "react";
-import { NaturoMark } from "@/components/brand/logo";
 import { ButtonLabel, ButtonLink } from "@/components/ui/button";
 import { cn } from "@/lib/cn";
 import { gsap, useGSAP } from "@/lib/gsap";
@@ -67,8 +66,7 @@ export function Hero() {
             aria-hidden
             className="pointer-events-none absolute -inset-x-16 -inset-y-14 -z-10 bg-[radial-gradient(closest-side,rgba(255,253,245,0.86),rgba(255,253,245,0.6)_55%,rgba(255,253,245,0)_100%)] sm:-inset-x-24"
           />
-          <p data-fade className="hero-pre-lg eyebrow flex items-center gap-3 text-forest">
-            <NaturoMark className="h-5 w-5 text-botanical" />
+          <p data-fade className="hero-pre-lg eyebrow text-forest">
             Rooted in nature. Made for everyday.
           </p>
           <h1 id="hero-title" className="mt-3 text-forest [text-shadow:0_1px_18px_rgba(255,253,245,0.55)] lg:mt-4">

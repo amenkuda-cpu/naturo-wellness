@@ -1,7 +1,7 @@
 # Naturo Wellness: website & online shop
 
 A premium, animated e-commerce site for **Naturo Wellness**: natural wellness shots, traditional Zimbabwean
-favourites, herbal teas and Naturo Cans (18+). Built with Next.js 16 (App Router, Cache Components), React 19, TypeScript,
+favourites, herbal teas and Naturo Cans. Built with Next.js 16 (App Router, Cache Components), React 19, TypeScript,
 Tailwind CSS 4, GSAP + ScrollTrigger, Motion for React, Lenis and Supabase.
 
 > **Status in one line:** the storefront, cart, checkout, order tracking and admin are built and tested
@@ -153,10 +153,10 @@ replaced with Naturo's price list (edit `price` in cents per product):
 | Wellness Shots, 100 ml | Ginger, Glow, Hibiscus, Pineapple · Men's Vitality | $2.00 · $2.50 |
 | Maheu, 500 ml | Traditional, Buttermilk | $1.00 |
 | Herbal Teas, 20 bags / 40 g | Ginger Lemon, Hibiscus, Green Focus, Muvheyi, Carrot · Sunset Glow · Indongo Bloom | $3.50 · $4.00 · $4.50 |
-| Naturo Cans, 330 ml, 5.2% alc./vol. | Orange, Cranberry, Apple | $1.50 |
-| Not yet priced | Muvhee, Ginger Lemon & Carrot Instant Powder | "Price coming soon" |
+| Naturo Cans, 330 ml | Orange, Cranberry, Apple | $1.50 |
+| Not yet priced | Muvhee | "Price coming soon" |
 
-**Age-restricted products:** categories with `ageRestricted: true` (Naturo Cans) show an 18+ badge and
+**Age-restricted products:** none at present. Any category given `ageRestricted: true` shows an 18+ badge and
 notice, and checkout requires "I confirm I am 18 or older". The server refuses the order without it
 (`placeOrder` in `src/lib/orders/service.ts`) and records the confirmation in the order notes.
 
@@ -175,7 +175,7 @@ Adding a product: add an entry to `seeds` in `products.ts`, add its image, then 
 Product photos are transparent cut-outs in `public/images/products/<photo>.webp`, 900 × 1350 px, with the
 pack positioned to match `HANG_POINT` in `src/components/visual/hanging-bottle.tsx` (shots start 168 px
 from the top and are 1084 px tall; Maheu bottles 234 / 1032; pouches 218 / 1034; cans 200 / 1060). Set
-`photo` on the product in `products.ts`. Muvhee and the Instant Powder still use temporary artwork
+`photo` on the product in `products.ts`. Muvhee still uses temporary artwork
 (`*-placeholder.webp`, flagged "Placeholder artwork"); add their photos the same way when ready.
 
 Images are rendered with `next/image` inside fixed-ratio boxes using `object-contain`, so a differently
@@ -310,8 +310,7 @@ transactions and webhooks, real device testing on iOS Safari.
 
 - [ ] Supabase connected, migration + seed applied, first admin created
 - [ ] Starting prices replaced with Naturo's price list; stock set; ingredient lists, allergens and storage copied from approved labels
-- [ ] Photos for Muvhee and the Instant Powder
-- [ ] Liquor licence confirmed for selling Naturo Cans online, and the 18+ wording reviewed
+- [ ] Photo for Muvhee
 - [ ] Delivery zones & fees and collection details confirmed
 - [ ] At least one payment method enabled; Paynow tested end-to-end in test mode
 - [ ] Contact details & social links set in env

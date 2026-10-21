@@ -21,6 +21,10 @@ interface SceneDef {
   accent: string;
   /** Short label for the progress rail. */
   label: string;
+  /** Scene heading when it shows a whole family rather than one product. */
+  title?: string;
+  /** Shop link for a family scene, and its button label. */
+  cta?: { href: string; label: string };
 }
 
 /** Art direction for each scene. Copy & prices always come from the catalogue. */
@@ -30,10 +34,56 @@ const SCENES: SceneDef[] = [
   { id: "hibiscus", label: "Hibiscus", slugs: ["hibiscus-shot"], style: "drop", bg: "#5E0E22", dark: true, ghost: "HIBISCUS", accent: "#F26C83" },
   { id: "pineapple", label: "Pineapple", slugs: ["pineapple-shot"], style: "tropical", bg: "#F9D449", ghost: "TROPICAL", accent: "#E8A118" },
   { id: "vitality", label: "Vitality", slugs: ["mens-vitality-shot"], style: "rise", bg: "#173F2B", dark: true, ghost: "VITALITY", accent: "#C7832F" },
-  { id: "tea", label: "Tea", slugs: ["ginger-lemon-tea", "hibiscus-tea"], style: "steam", bg: "#F3EAD6", ghost: "SLOW", accent: "#E9A62E" },
+  {
+    id: "tea",
+    label: "Tea",
+    title: "Herbal Teas",
+    // Packaging order.
+    slugs: ["ginger-lemon-tea", "carrot-tea", "muvheyi-tea", "hibiscus-tea", "green-focus-tea", "indongo-bloom-tea", "sunset-glow-tea"],
+    cta: { href: "/shop?category=teas-and-powders", label: "Shop all herbal teas" },
+    style: "steam",
+    bg: "#F3EAD6",
+    ghost: "SLOW",
+    accent: "#E9A62E",
+  },
   { id: "heritage", label: "Heritage", slugs: ["maheu-traditional", "maheu-buttermilk"], style: "meet", bg: "#E6D2AA", ghost: "HERITAGE", accent: "#A86B2C" },
-  { id: "cans", label: "Cans 18+", slugs: ["orange-can", "cranberry-can"], style: "drop", bg: "#1F2550", dark: true, ghost: "CHEERS", accent: "#F2711C" },
+  {
+    id: "cans",
+    label: "Cans",
+    title: "Fruit Juice",
+    slugs: ["orange-can", "cranberry-can", "apple-can"],
+    cta: { href: "/shop?category=naturo-cans", label: "Explore the cans" },
+    style: "drop",
+    bg: "#1F2550",
+    dark: true,
+    ghost: "CHEERS",
+    accent: "#F2711C",
+  },
 ];
+
+/**
+ * Family line-ups (3+ products): [left-centre %, top or bottom offset %, height %].
+ * Seven teas sit in two staggered rows; three cans stand in a row, the middle one forward.
+ */
+const LINEUP_SLOTS: Record<number, { x: number; y: number; h: number; from: "top" | "bottom"; z: number }[]> = {
+  7: [
+    { x: 50, y: 0, h: 56, from: "bottom", z: 3 },
+    { x: 27, y: 2, h: 50, from: "bottom", z: 2 },
+    { x: 73, y: 2, h: 50, from: "bottom", z: 2 },
+    { x: 18, y: 13, h: 44, from: "top", z: 1 },
+    { x: 39, y: 11, h: 44, from: "top", z: 1 },
+    { x: 61, y: 11, h: 44, from: "top", z: 1 },
+    { x: 82, y: 13, h: 44, from: "top", z: 1 },
+  ],
+  3: [
+    { x: 50, y: 4, h: 86, from: "bottom", z: 2 },
+    { x: 22, y: 8, h: 74, from: "bottom", z: 1 },
+    { x: 78, y: 8, h: 74, from: "bottom", z: 1 },
+  ],
+};
+
+/** "Ginger Lemon Herbal Tea" → "Ginger Lemon", "Naturo Apple" → "Apple": the flavour as printed on the pack. */
+const flavourName = (p: Product) => p.name.replace(/ Herbal Tea$/, "").replace(/^Naturo /, "");
 
 const ING_SLOTS = [
   "left-[2%] top-[8%] w-[24%] lg:left-[4%] lg:top-[10%] lg:w-[22%]",
@@ -132,9 +182,11 @@ function Scene({
   samplePricing: boolean;
 }) {
   const [primary, secondary] = products;
+  const lineup = products.length > 2 ? LINEUP_SLOTS[products.length] : undefined;
   const flip = index % 2 === 1;
-  const motifs = primary.motifs.slice(0, 4) as Motif[];
-  const words = primary.name.split(" ");
+  // A family line-up fills the frame, so it goes without floating ingredients.
+  const motifs = (lineup ? [] : primary.motifs.slice(0, 4)) as Motif[];
+  const words = (def.title ?? primary.name).split(" ");
   const labels = primary.mood.split(".").map((s) => s.trim()).filter(Boolean);
   const textTone = def.dark ? "text-warm" : "text-forest";
   const variant = primary.variants[0];
@@ -208,7 +260,23 @@ function Scene({
             </div>
           ))}
 
-          {def.style === "swing" ? (
+          {lineup ? (
+            <div data-s="bottle" className="absolute inset-0 z-10">
+              {products.map((p, i) => {
+                const slot = lineup[i];
+                return (
+                  <ProductImage
+                    key={p.id}
+                    product={p}
+                    sizes="(min-width: 1024px) 16vw, 30vw"
+                    className="absolute aspect-[2/3] -translate-x-1/2"
+                    style={{ left: `${slot.x}%`, [slot.from]: `${slot.y}%`, height: `${slot.h}%`, zIndex: slot.z }}
+                    imgClassName="[filter:drop-shadow(0_24px_22px_rgba(0,0,0,0.24))]"
+                  />
+                );
+              })}
+            </div>
+          ) : def.style === "swing" ? (
             <div data-s="bottle" className="absolute inset-0 z-10">
               <HangingBottle
                 product={primary}
@@ -282,7 +350,7 @@ function Scene({
             {primary.mood}
           </p>
           <p data-s="copy" className="mt-4 max-w-md text-base leading-relaxed opacity-85 lg:text-lg">
-            {primary.shortDescription}
+            {lineup ? categoryById(primary.category).description : primary.shortDescription}
           </p>
           <ul className="mt-6 flex flex-wrap gap-2" aria-label="Character">
             {labels.map((l) => (
@@ -298,25 +366,45 @@ function Scene({
               </li>
             ))}
           </ul>
-          <div data-s="copy" className="mt-8 flex flex-wrap items-center gap-x-5 gap-y-4">
-            <Link
-              href={`/shop/${primary.slug}`}
-              className={buttonClasses({ variant: def.dark ? "sun" : "primary", size: "lg" })}
-            >
-              <ButtonLabel>{isAgeRestricted(primary) ? "Explore the cans" : "Explore this blend"}</ButtonLabel>
-              <ArrowUpRight className="h-4 w-4" aria-hidden />
-            </Link>
-            <div className="flex items-center gap-3">
-              <PriceTag product={primary} className="text-lg" sample={samplePricing && isDevSamplePrice(variant?.id)} />
-              <AddToCartButton product={primary} compact tone={def.dark ? "light" : "dark"} />
+          {lineup && (
+            <ul data-s="copy" className="mt-6 flex max-w-md flex-wrap gap-x-4 gap-y-2" aria-label="Flavours">
+              {products.map((p) => (
+                <li key={p.id}>
+                  <Link href={`/shop/${p.slug}`} className="text-sm font-semibold underline decoration-1 underline-offset-4 opacity-90 hover:opacity-100">
+                    {flavourName(p)}
+                  </Link>
+                </li>
+              ))}
+            </ul>
+          )}
+          {lineup && def.cta ? (
+            <div data-s="copy" className="mt-8">
+              <Link href={def.cta.href} className={buttonClasses({ variant: def.dark ? "sun" : "primary", size: "lg" })}>
+                <ButtonLabel>{def.cta.label}</ButtonLabel>
+                <ArrowUpRight className="h-4 w-4" aria-hidden />
+              </Link>
             </div>
-          </div>
+          ) : (
+            <div data-s="copy" className="mt-8 flex flex-wrap items-center gap-x-5 gap-y-4">
+              <Link
+                href={`/shop/${primary.slug}`}
+                className={buttonClasses({ variant: def.dark ? "sun" : "primary", size: "lg" })}
+              >
+                <ButtonLabel>{isAgeRestricted(primary) ? "Explore the cans" : "Explore this blend"}</ButtonLabel>
+                <ArrowUpRight className="h-4 w-4" aria-hidden />
+              </Link>
+              <div className="flex items-center gap-3">
+                <PriceTag product={primary} className="text-lg" sample={samplePricing && isDevSamplePrice(variant?.id)} />
+                <AddToCartButton product={primary} compact tone={def.dark ? "light" : "dark"} />
+              </div>
+            </div>
+          )}
           {isAgeRestricted(primary) && (
             <p data-s="copy" className="mt-6 text-sm font-semibold opacity-90">
               Contains alcohol (5.2% alc./vol.). 18+ only. Please enjoy responsibly.
             </p>
           )}
-          {secondary && (
+          {secondary && !lineup && (
             <p data-s="copy" className="mt-6 text-sm opacity-80">
               Also in this family:{" "}
               <Link href={`/shop/${secondary.slug}`} className="font-semibold underline decoration-1 underline-offset-4">

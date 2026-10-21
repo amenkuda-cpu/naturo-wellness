@@ -47,7 +47,7 @@ test.describe("Storefront", () => {
 
   test("shop filters by category and search", async ({ page }) => {
     await page.goto("/shop");
-    await expect(page.getByText("19 products")).toBeVisible();
+    await expect(page.getByText("18 products")).toBeVisible();
     await page.getByRole("tab", { name: "Traditional Favourites" }).click();
     await expect(page).toHaveURL(/category=traditional-favourites/);
     await expect(page.getByText("3 products")).toBeVisible();
@@ -83,7 +83,9 @@ test.describe("Storefront", () => {
     expect(body.quote.issues[0].code).toBe("not_for_sale");
   });
 
-  test("server refuses 18+ products unless the customer confirms their age", async ({ request }) => {
+  // No product is age-restricted at present (Naturo Cans are non-alcoholic). Re-enable with an
+  // `ageRestricted` category if one is added.
+  test.skip("server refuses 18+ products unless the customer confirms their age", async ({ request }) => {
     const res = await request.post("/api/checkout", {
       data: {
         items: [{ productId: "orange-can", variantId: "orange-can-standard", quantity: 1 }],

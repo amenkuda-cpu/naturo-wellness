@@ -385,7 +385,6 @@ const products = [
   { file: "maheu", shape: tallBottle, labelLines: ["Maheu"], kicker: "TRADITIONAL", liquid: ["#F1E7CF", "#D3C29A"], ink: "#173F2B", accent: "#C9A24A", cap: ["#367A45", "#173F2B"] },
   { file: "muvhee", shape: tallBottle, labelLines: ["Muvhee"], kicker: "TRADITIONAL", liquid: ["#E1BE8A", "#9E7443"], ink: "#173F2B", accent: "#A86B2C", cap: ["#E7A33E", "#9C5E1C"] },
   { file: "herbal-tea", shape: pouch, labelLines: ["Ginger,", "Lemon", "&amp; Carrot"], kicker: "HERBAL TEA", pouch: "#E9DCC0", ink: "#173F2B", accent: "#E9772E" },
-  { file: "instant-powder", shape: pouch, labelLines: ["Ginger,", "Lemon", "&amp; Carrot"], kicker: "INSTANT POWDER", pouch: "#F7E9A6", ink: "#173F2B", accent: "#367A45" },
 ];
 
 async function render(svg, file, width) {
