@@ -6,7 +6,7 @@ import { useRef } from "react";
 import { ButtonLabel, ButtonLink } from "@/components/ui/button";
 import { cn } from "@/lib/cn";
 import { gsap, useGSAP } from "@/lib/gsap";
-import { HeroVideo } from "./hero-video";
+import { HeroSequence } from "./hero-sequence";
 
 /** Split a line into masked characters for the headline reveal. */
 function SplitLine({ text, className }: { text: string; className?: string }) {
@@ -27,13 +27,26 @@ function SplitLine({ text, className }: { text: string; className?: string }) {
 }
 
 export function Hero() {
+  const track = useRef<HTMLDivElement>(null);
   const root = useRef<HTMLElement>(null);
+  const copy = useRef<HTMLDivElement>(null);
 
   useGSAP(
     () => {
       const el = root.current!;
       el.dataset.ready = "true";
       const mm = gsap.matchMedia();
+
+      // While the film scrubs, the copy and scroll cue step aside so the
+      // product line-up lands clean.
+      mm.add("(prefers-reduced-motion: no-preference)", () => {
+        gsap
+          .timeline({
+            scrollTrigger: { trigger: track.current, start: "top top", end: () => `+=${window.innerHeight * 0.6}`, scrub: 0.4 },
+          })
+          .to(el.querySelector("[data-scroll-cue]"), { autoAlpha: 0, duration: 0.3, ease: "none" }, 0)
+          .to(copy.current, { autoAlpha: 0, y: -48, duration: 1, ease: "power1.in" }, 0);
+      });
 
       // Desktop only, and only when motion is welcome: a short typography reveal.
       // On phones (and for reduced motion) everything paints immediately.
@@ -50,17 +63,28 @@ export function Hero() {
   );
 
   return (
+    // The track gives the pinned hero room to scrub through the film.
+    <div ref={track} className="relative h-[100svh] min-h-[34rem] motion-safe:h-[240svh] lg:motion-safe:h-[260svh]">
     <section
       ref={root}
       data-hero
       aria-labelledby="hero-title"
-      className="relative isolate flex h-[100svh] min-h-[34rem] w-full items-end overflow-hidden bg-sun"
+      className="sticky top-0 isolate flex h-[100svh] min-h-[34rem] w-full items-end overflow-hidden bg-sun"
     >
-      {/* Full-bleed product film. No overlay: it stays sharp and bright. */}
-      <HeroVideo />
+      {/* Full-bleed product film, scrubbed by scroll. No overlay: it stays sharp and bright. */}
+      <HeroSequence track={track} />
+
+      <div
+        aria-hidden
+        data-scroll-cue
+        className="pointer-events-none absolute bottom-5 right-5 hidden flex-col items-center gap-2 text-[0.65rem] font-semibold uppercase tracking-[0.22em] text-forest/80 motion-reduce:hidden sm:flex lg:bottom-8 lg:right-8"
+      >
+        Scroll
+        <span className="block h-10 w-px origin-top animate-pulse bg-forest/50" />
+      </div>
 
       <div className="container-x relative w-full pb-16 pt-24 sm:pb-20 lg:pb-[clamp(3rem,8vh,6rem)]">
-        <div className="relative max-w-[34rem] lg:max-w-[38rem]">
+        <div ref={copy} className="relative max-w-[34rem] lg:max-w-[38rem]">
           {/* A soft, light glow behind the copy only, for contrast. */}
           <div
             aria-hidden
@@ -99,5 +123,6 @@ export function Hero() {
         </div>
       </div>
     </section>
+    </div>
   );
 }
