@@ -2,7 +2,6 @@ import { Suspense } from "react";
 import { ClosingCta } from "@/components/home/closing-cta";
 import { CollectionFeature } from "@/components/home/collection-feature";
 import { Hero } from "@/components/home/hero";
-import { Marquee } from "@/components/home/marquee";
 import { Moments } from "@/components/home/moments";
 import { ProductShowcase } from "@/components/home/product-showcase";
 import { RangeRail } from "@/components/home/range-rail";
@@ -17,7 +16,6 @@ export default async function HomePage() {
   return (
     <>
       <Hero />
-      <Marquee />
       <Suspense>
         <ProductShowcase catalog={catalog} samplePricing={settings.samplePricing} />
       </Suspense>

@@ -53,7 +53,7 @@ export function ProductImage({
   );
 }
 
-/** Decorative ingredient artwork (empty alt: purely visual). */
+/** Decorative ingredient photo cut-out (empty alt: purely visual). Sources: ASSET-CREDITS.md. */
 export function MotifImage({
   motif,
   className,
@@ -68,7 +68,7 @@ export function MotifImage({
   return (
     <div className={cn("pointer-events-none aspect-square", positioned(className), className)} aria-hidden>
       <Image
-        src={`/images/ingredients/${motif}.webp`}
+        src={`/images/ingredients/real/${motif}.webp`}
         alt=""
         fill
         sizes={sizes}

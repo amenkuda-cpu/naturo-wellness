@@ -179,7 +179,7 @@ from the top and are 1084 px tall; Maheu bottles 234 / 1032; pouches 218 / 1034;
 (`*-placeholder.webp`, flagged "Placeholder artwork"); add their photos the same way when ready.
 
 Images are rendered with `next/image` inside fixed-ratio boxes using `object-contain`, so a differently
-proportioned photo still fits. Ingredient art lives in `public/images/ingredients/`.
+proportioned photo still fits. Ingredient photo cut-outs live in `public/images/ingredients/real/` (sources in `ASSET-CREDITS.md`).
 
 ## Database (Supabase)
 
