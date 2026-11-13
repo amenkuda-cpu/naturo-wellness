@@ -42,7 +42,7 @@ export function Hero() {
       mm.add("(prefers-reduced-motion: no-preference)", () => {
         gsap
           .timeline({
-            scrollTrigger: { trigger: track.current, start: "top top", end: () => `+=${window.innerHeight * 0.6}`, scrub: 0.4 },
+            scrollTrigger: { trigger: track.current, start: "top top", end: () => `+=${window.innerHeight * 0.8}`, scrub: 0.8 },
           })
           .to(el.querySelector("[data-scroll-cue]"), { autoAlpha: 0, duration: 0.3, ease: "none" }, 0)
           .to(copy.current, { autoAlpha: 0, y: -48, duration: 1, ease: "power1.in" }, 0);
@@ -64,7 +64,7 @@ export function Hero() {
 
   return (
     // The track gives the pinned hero room to scrub through the film.
-    <div ref={track} className="relative h-[100svh] min-h-[34rem] motion-safe:h-[240svh] lg:motion-safe:h-[260svh]">
+    <div ref={track} className="relative h-[100svh] min-h-[34rem] motion-safe:h-[340svh] lg:motion-safe:h-[380svh]">
     <section
       ref={root}
       data-hero

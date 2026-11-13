@@ -16,6 +16,9 @@ const nextConfig: NextConfig = {
   poweredByHeader: false,
   // No Next.js dev-tools badge over the page (keeps local reviews and recordings clean).
   devIndicators: false,
+  // Low-memory machines: run `npx tsc --noEmit` first, then build with
+  // SKIP_BUILD_TYPECHECK=1 so the build doesn't type-check a second time.
+  typescript: { ignoreBuildErrors: process.env.SKIP_BUILD_TYPECHECK === "1" },
   images: {
     formats: ["image/avif", "image/webp"],
     qualities: [75, 85],

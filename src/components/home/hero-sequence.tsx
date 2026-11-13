@@ -3,8 +3,8 @@
 import { useEffect, useRef, type RefObject } from "react";
 import { gsap } from "@/lib/gsap";
 
-/** Frames extracted from the original product film (public/frames/hero/{desktop,mobile}/f001..f112.webp). */
-const FRAME_COUNT = 112;
+/** Frames extracted from the original product film (public/frames/hero/{desktop,mobile}/f001..f103.webp; first 0.7s and the closing fade-to-black trimmed). */
+const FRAME_COUNT = 103;
 const frameSrc = (set: "desktop" | "mobile", i: number) => `/frames/hero/${set}/f${String(i + 1).padStart(3, "0")}.webp`;
 
 type RGB = [number, number, number];
@@ -73,10 +73,30 @@ export function HeroSequence({ track }: { track: RefObject<HTMLElement | null> }
 
     const rgba = (c: RGB, a: number) => `rgba(${c[0]},${c[1]},${c[2]},${a})`;
 
+    let drawnAt = -1;
     const draw = (force = false) => {
-      const idx = nearestLoaded(Math.round(state.frame));
-      if (idx < 0 || (idx === drawn && !force)) return;
+      const pos = state.frame;
+      // Skip redundant paints (sub-1% of a frame apart).
+      if (!force && Math.abs(pos - drawnAt) < 0.01) return;
+      const base = Math.floor(pos);
+      const frac = pos - base;
+      // Cross-fade between the two neighbouring frames when both are in, so
+      // motion glides instead of stepping; otherwise fall back to the nearest.
+      let idx = base;
+      let next = -1;
+      if (frames[base] && frac > 0.02 && frames[base + 1]) next = base + 1;
+      else if (!frames[base]) idx = nearestLoaded(Math.round(pos));
+      if (idx < 0) return;
       const { img, top, bottom } = frames[idx]!;
+      const paint = (x: number, y: number, w: number, h: number) => {
+        ctx.globalAlpha = 1;
+        ctx.drawImage(img, x, y, w, h);
+        if (next >= 0) {
+          ctx.globalAlpha = frac;
+          ctx.drawImage(frames[next]!.img, x, y, w, h);
+          ctx.globalAlpha = 1;
+        }
+      };
       const cw = canvas.width;
       const ch = canvas.height;
       const iw = img.naturalWidth;
@@ -86,7 +106,7 @@ export function HeroSequence({ track }: { track: RefObject<HTMLElement | null> }
       if (!portrait) {
         const dw = iw * cover;
         const dh = ih * cover;
-        ctx.drawImage(img, (cw - dw) / 2, (ch - dh) / 2, dw, dh);
+        paint((cw - dw) / 2, (ch - dh) / 2, dw, dh);
       } else {
         // Fit ~83% of the crop's width so every bottle stays visible, sit it in the
         // upper part of the screen (copy lives below), and blend the edges away.
@@ -102,7 +122,7 @@ export function HeroSequence({ track }: { track: RefObject<HTMLElement | null> }
         ctx.fillRect(0, 0, cw, mid);
         ctx.fillStyle = rgba(bottom, 1);
         ctx.fillRect(0, mid, cw, ch - mid);
-        ctx.drawImage(img, dx, dy, dw, dh);
+        paint(dx, dy, dw, dh);
         if (dh < ch) {
           const band = dh * 0.2;
           let g = ctx.createLinearGradient(0, dy, 0, dy + band);
@@ -118,6 +138,7 @@ export function HeroSequence({ track }: { track: RefObject<HTMLElement | null> }
         }
       }
       drawn = idx;
+      drawnAt = pos;
       canvas.dataset.ready = "true";
     };
 
@@ -188,7 +209,8 @@ export function HeroSequence({ track }: { track: RefObject<HTMLElement | null> }
         frame: FRAME_COUNT - 1,
         ease: "none",
         onUpdate: () => draw(),
-        scrollTrigger: { trigger: trackEl, start: "top top", end: "bottom bottom", scrub: 0.35 },
+        // A soft catch-up (1.2s) on top of Lenis so the film eases after the scroll.
+        scrollTrigger: { trigger: trackEl, start: "top top", end: "bottom bottom", scrub: 1.2 },
       });
     }
 
