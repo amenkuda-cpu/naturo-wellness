@@ -7,6 +7,24 @@ import { NextResponse, type NextRequest } from "next/server";
  * re-checked on the server (requireStaff / RLS); this is not a security gate.
  */
 export async function proxy(request: NextRequest) {
+  const isHttp =
+    request.headers.get("x-forwarded-proto") === "http" ||
+    request.nextUrl.protocol === "http:";
+  if (isHttp || request.headers.get("host") === "www.getnaturo.com") {
+    const target = request.nextUrl.clone();
+    target.protocol = "https:";
+    if (request.headers.get("host") === "www.getnaturo.com") target.host = "getnaturo.com";
+    return NextResponse.redirect(target, 301);
+  }
+
+  const pathname = request.nextUrl.pathname;
+  const needsAuth =
+    pathname === "/checkout" ||
+    pathname.startsWith("/account") ||
+    pathname.startsWith("/admin") ||
+    pathname.startsWith("/auth");
+  if (!needsAuth) return NextResponse.next({ request });
+
   const url = process.env.NEXT_PUBLIC_SUPABASE_URL;
   const key = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
   let response = NextResponse.next({ request });
@@ -27,5 +45,5 @@ export async function proxy(request: NextRequest) {
 }
 
 export const config = {
-  matcher: ["/account/:path*", "/admin/:path*", "/auth/:path*", "/checkout"],
+  matcher: ["/account/:path*", "/admin/:path*", "/auth/:path*", "/checkout", "/api/checkout/:path*"],
 };

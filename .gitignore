@@ -53,5 +53,11 @@ next-env.d.ts
 # Local Netlify folder
 .netlify
 
+# Cloudflare Workers / OpenNext
+/.open-next/
+/.wrangler/
+.dev.vars
+/supabase/.temp/
+
 .vercel
 .env*

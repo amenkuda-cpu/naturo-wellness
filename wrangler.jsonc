@@ -1,0 +1,65 @@
+﻿{
+  "$schema": "./node_modules/wrangler/config-schema.json",
+  "name": "naturo-wellness",
+  "main": ".open-next/worker.js",
+  "compatibility_date": "2026-10-23",
+  "compatibility_flags": ["nodejs_compat"],
+  "assets": {
+    "directory": ".open-next/assets",
+    "binding": "ASSETS"
+  },
+  "observability": {
+    "enabled": true
+  },
+  "upload_source_maps": true,
+  "routes": [
+    { "pattern": "getnaturo.com", "custom_domain": true },
+    { "pattern": "www.getnaturo.com", "custom_domain": true }
+  ],
+  "routes": [
+    { "pattern": "getnaturo.com", "custom_domain": true },
+    { "pattern": "www.getnaturo.com", "custom_domain": true }
+  ],
+  "services": [
+    {
+      "binding": "WORKER_SELF_REFERENCE",
+      "service": "naturo-wellness"
+    }
+  ],
+  "kv_namespaces": [
+    {
+      "binding": "NEXT_INC_CACHE_KV",
+      "id": "ca5c9db47dd646a7b3afb7e74abbb982"
+    }
+  ],
+  "durable_objects": {
+    "bindings": [
+      {
+        "name": "NEXT_CACHE_DO_QUEUE",
+        "class_name": "DOQueueHandler"
+      },
+      {
+        "name": "NEXT_TAG_CACHE_DO_SHARDED",
+        "class_name": "DOShardedTagCache"
+      }
+    ]
+  },
+  "migrations": [
+    {
+      "tag": "v1",
+      "new_sqlite_classes": ["DOQueueHandler", "DOShardedTagCache"]
+    }
+  ],
+  "vars": {
+    "NEXT_PUBLIC_SITE_URL": "https://getnaturo.com",
+    "NEXT_PUBLIC_SUPABASE_URL": "https://eigpmwtrqyezlhlzhljc.supabase.co",
+    "NEXT_PUBLIC_SUPABASE_ANON_KEY": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImVpZ3Btd3RycXllemxobHpobGpjIiwicm9sZSI6ImFub24iLCJpYXQiOjE3OTI3NTc1MzcsImV4cCI6MjEwODMzMzUzN30.Mp6EQH2_4MZX4kway27K2bDdaPhNSoFNnp50-uzMyWQ",
+    "PAYMENT_COD_ENABLED": "true",
+    "PAYMENT_MANUAL_ENABLED": "true",
+    "PAYMENT_MANUAL_INSTRUCTIONS": "Our team will contact you with payment details to confirm your order.",
+    "PAYMENT_PAYNOW_ENABLED": "false",
+    "NEXT_PUBLIC_TAX_RATE_BPS": "0",
+    "NEXT_PUBLIC_COLLECTION_ENABLED": "true",
+    "NEXT_PUBLIC_ANALYTICS_PROVIDER": "none"
+  }
+}
