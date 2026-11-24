@@ -2,7 +2,9 @@ import { ChevronDown, Search, UsersRound } from "lucide-react";
 import type { Metadata } from "next";
 import Link from "next/link";
 import { StatCard } from "@/components/admin/live";
+import { BulkEmail } from "@/components/admin/bulk-email";
 import { MessageComposer } from "@/components/admin/message-composer";
+import { siteConfig } from "@/config/site";
 import { AdminTitle, DevModeBanner, EmptyState, IconChip, Pill, field, timeAgo, tones } from "@/components/admin/ui";
 import { requireStaff } from "@/lib/auth";
 import { formatMoney } from "@/lib/commerce/pricing";
@@ -27,6 +29,29 @@ interface Customer {
   lastOrderId: string | null;
   queries: number;
 }
+
+const BULK_TEMPLATES = [
+  {
+    label: "Delivery prices",
+    subject: "Our delivery prices",
+    text: [
+      "Hi {name},",
+      "A quick update from Naturo Wellness on delivery. Delivery is now added to your order total as follows:",
+      "- Harare CBD: $3\n- Everywhere else in Zimbabwe (including the Harare suburbs): $5\n- South Africa: $15",
+      "You can still collect from us for free. Order any time at getnaturo.com.",
+      "Thank you for choosing Naturo!",
+    ].join("\n\n"),
+  },
+  {
+    label: "New flavours",
+    subject: "New Naturo flavours are in",
+    text: [
+      "Hi {name},",
+      "Our new flavours are in! Order at getnaturo.com and we'll deliver across Zimbabwe and South Africa.",
+      "The Naturo Wellness team",
+    ].join("\n\n"),
+  },
+];
 
 const keyOf = (phone: string | null, email: string | null) => (phone ? whatsappDigits(phone) : (email ?? "").toLowerCase());
 
@@ -90,6 +115,15 @@ export default async function CustomersPage({ searchParams }: { searchParams: Pr
         <StatCard label="Average lifetime spend" value={lifetime} format="money" currency={currency} accent={tones.violet.base} chip={<IconChip icon={UsersRound} tone="violet" />} index={1} />
         <StatCard label="Come back for more (90 days)" value={perf.repeatRate.pct ?? 0} format="percent" accent={tones.green.base} chip={<IconChip icon={UsersRound} tone="green" />} index={2} hint={`${perf.repeatRate.repeat} of ${perf.repeatRate.customers} customers ordered twice or more`} />
       </div>
+
+      {ctx.role === "admin" && (
+        <BulkEmail
+          recipients={[...map.values()].filter((c) => c.email && /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(c.email)).map((c) => ({ name: c.name, email: c.email!.trim().toLowerCase(), phone: c.phone })).filter((r, i, a) => a.findIndex((x) => x.email === r.email) === i)}
+          emailReady={env.email.configured || !env.isProduction}
+          ownAddress={siteConfig.contact.email}
+          templates={BULK_TEMPLATES}
+        />
+      )}
 
       <nav aria-label="Sort customers" className="mb-4 flex gap-1 text-sm">
         {(["recent", "spent", "orders"] as const).map((s) => (

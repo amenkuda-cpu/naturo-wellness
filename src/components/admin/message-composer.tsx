@@ -14,6 +14,13 @@ export interface Recipient {
   phone: string | null;
 }
 
+/** mailto: link that opens the admin's own email app with everything filled in. */
+export function mailtoUrl({ to, bcc, subject, body }: { to?: string; bcc?: string[]; subject: string; body: string }) {
+  const q = [`subject=${encodeURIComponent(subject)}`, `body=${encodeURIComponent(body)}`];
+  if (bcc?.length) q.unshift(`bcc=${bcc.map(encodeURIComponent).join(",")}`);
+  return `mailto:${to ? encodeURIComponent(to).replace(/%40/g, "@") : ""}?${q.join("&")}`;
+}
+
 /** Zimbabwe numbers: 07x… → 2637x… for WhatsApp links. */
 export const waNumber = (phone: string, zoneId?: string | null) => whatsappDigits(phone, zoneId);
 
@@ -65,8 +72,15 @@ export function MessageComposer({
   const firstName = to.name.split(" ")[0] || "there";
 
   function onSubmit(e: React.FormEvent<HTMLFormElement>) {
-    // WhatsApp / SMS must open inside the click, or the browser blocks the new window.
-    if (channel === "email" || !to.phone || body.trim().length < 2) return;
+    // Email app / WhatsApp / SMS must open inside the click, or the browser blocks it.
+    if (body.trim().length < 2) return;
+    if (channel === "email") {
+      if (emailReady || !to.email) return;
+      const subject = String(new FormData(e.currentTarget).get("subject") || defaultSubject || "A message from Naturo Wellness");
+      window.location.assign(mailtoUrl({ to: to.email, subject, body: body.trim() }));
+      return;
+    }
+    if (!to.phone) return;
     const text = encodeURIComponent(body.trim());
     const url = channel === "whatsapp" ? `https://wa.me/${waNumber(to.phone)}?text=${text}` : `sms:${to.phone.replace(/\s/g, "")}?&body=${text}`;
     window.open(url, "_blank", "noopener");
@@ -100,7 +114,7 @@ export function MessageComposer({
 
       {channel === "email" && !emailReady && (
         <p className="rounded-[14px] bg-[var(--c-warn-bg)] px-3 py-2 text-xs text-[var(--c-warn)]">
-          The email sender isn&apos;t connected yet, so emails can&apos;t go out. WhatsApp and SMS work now.
+          Emails open in your own email app (Gmail, Outlook…) with everything filled in: just press send there. Automatic sending from getnaturo.com switches on once the email service is connected.
         </p>
       )}
 
@@ -142,11 +156,11 @@ export function MessageComposer({
             <span />
           )}
           <button
-            disabled={pending || !available(channel) || (channel === "email" && !emailReady)}
+            disabled={pending || !available(channel)}
             className="inline-flex items-center gap-2 rounded-full bg-[var(--a-accent)] px-5 py-2.5 text-sm font-semibold text-[#14151B] transition hover:brightness-110 disabled:opacity-50"
           >
             {pending ? <Loader2 className="h-4 w-4 animate-spin" aria-hidden /> : <Send className="h-4 w-4" aria-hidden />}
-            {channel === "email" ? "Send email" : channel === "whatsapp" ? "Open in WhatsApp" : "Open in SMS"}
+            {channel === "email" ? (emailReady ? "Send email" : "Open in email app") : channel === "whatsapp" ? "Open in WhatsApp" : "Open in SMS"}
           </button>
         </div>
         {state.message && <p aria-live="polite" className={state.ok ? "text-sm text-[var(--c-ok)]" : "text-sm text-[var(--c-bad)]"}>{state.message}</p>}
@@ -162,7 +176,7 @@ export function MessageComposer({
                 <span>{new Date(m.createdAt).toLocaleString("en-GB", { day: "numeric", month: "short", hour: "2-digit", minute: "2-digit", timeZone: "Africa/Harare" })}</span>
                 <span>· {m.sentBy}</span>
                 <span className={cn("ml-auto rounded-full px-2 py-0.5 font-semibold", m.status === "failed" ? "bg-[var(--c-bad-bg)] text-[var(--c-bad)]" : "bg-[var(--c-ok-bg)] text-[var(--c-ok)]")}>
-                  {m.status === "sent" ? "Sent" : m.status === "handed_off" ? "Opened on phone" : "Failed"}
+                  {m.status === "sent" ? "Sent" : m.status === "handed_off" ? (m.channel === "email" ? "Opened in email app" : "Opened on phone") : "Failed"}
                 </span>
               </div>
               {m.subject && <p className="font-medium">{m.subject}</p>}

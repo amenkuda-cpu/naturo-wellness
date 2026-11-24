@@ -13,6 +13,8 @@ import { getStaffRepository } from "@/lib/repositories";
 
 const actor = (ctx: StaffContext) => (ctx.mode === "dev" ? "dev-admin" : ctx.user.email ?? ctx.user.id);
 const uuid = z.uuid();
+/** True when emails go out from the server; otherwise the admin's email app is opened instead. */
+const emailDirect = () => env.email.configured || !env.isProduction;
 
 export interface RiderState {
   ok: boolean;
@@ -183,6 +185,31 @@ export async function sendMessageAction(_prev: SendState, formData: FormData): P
   if (d.channel === "email") {
     if (!z.email().safeParse(d.toEmail).success) return { ok: false, message: "This customer has no valid email address.", sentAt: 0 };
     const subject = d.subject || "A message from Naturo Wellness";
+    if (!emailDirect()) {
+      // No sending service yet: the composer opened the admin's own email app (mailto).
+      await ops
+        .addMessage({
+          enquiryId,
+          orderId,
+          customerName: d.customerName,
+          toEmail: d.toEmail,
+          toPhone: d.toPhone || null,
+          channel: "email",
+          subject,
+          body: d.body,
+          status: "handed_off",
+          error: null,
+          sentBy: actor(ctx),
+        })
+        .catch(() => undefined);
+      if (enquiryId) {
+        await ops.updateEnquiry(enquiryId, { status: d.resolve === "on" ? "resolved" : "open" }).catch(() => undefined);
+        revalidatePath("/admin/enquiries");
+      }
+      if (orderId) revalidatePath(`/admin/orders/${orderId}`);
+      revalidatePath("/admin/customers");
+      return { ok: true, message: "Opened your email app with the message filled in: press send there. Logged here.", sentAt: Date.now() };
+    }
     const sent = await sendEmail({ to: d.toEmail, subject, text: d.body });
     await ops
       .addMessage({
@@ -230,4 +257,64 @@ export async function sendMessageAction(_prev: SendState, formData: FormData): P
     message: d.channel === "email" ? `Email sent to ${d.toEmail}.` : `Opened ${d.channel === "whatsapp" ? "WhatsApp" : "SMS"}: press send there. Logged here.`,
     sentAt: Date.now(),
   };
+}
+
+export interface BulkEmailState {
+  ok: boolean;
+  message: string | null;
+  sentAt: number;
+}
+
+const bulkSchema = z.object({
+  subject: z.string().trim().min(2, "Add a subject.").max(200),
+  body: z.string().trim().min(2, "Write a message first.").max(4000),
+  recipients: z.string().max(200_000),
+  /** "server" = send from getnaturo.com; "handoff" = opened in the admin's email app. */
+  mode: z.enum(["server", "handoff"]),
+});
+
+/**
+ * Email many customers at once. With a sending service connected each customer
+ * gets their own copy (with their first name); otherwise the composer opened the
+ * admin's email app with everyone in Bcc and this just logs it.
+ */
+export async function bulkEmailAction(_prev: BulkEmailState, formData: FormData): Promise<BulkEmailState> {
+  const ctx = await requireStaff({ admin: true });
+  const p = bulkSchema.safeParse(Object.fromEntries(formData));
+  if (!p.success) return { ok: false, message: p.error.issues[0].message, sentAt: 0 };
+  const list = z
+    .array(z.object({ name: z.string().max(100), email: z.email(), phone: z.string().max(20).nullish() }))
+    .max(500)
+    .safeParse(JSON.parse(p.data.recipients || "[]"));
+  if (!list.success || list.data.length === 0) return { ok: false, message: "Choose at least one customer with an email address.", sentAt: 0 };
+  const ops = await getStaffOps(ctx);
+  const direct = p.data.mode === "server" && emailDirect();
+  let sent = 0;
+  const failed: string[] = [];
+  for (const r of list.data) {
+    const first = r.name.split(" ")[0] || "there";
+    const text = p.data.body.replace(/\{name\}/g, first);
+    const res = direct ? await sendEmail({ to: r.email, toName: r.name, subject: p.data.subject, text }) : ({ ok: true } as const);
+    if (res.ok) sent += 1;
+    else failed.push(r.email);
+    await ops
+      .addMessage({
+        enquiryId: null,
+        orderId: null,
+        customerName: r.name,
+        toEmail: r.email,
+        toPhone: r.phone || null,
+        channel: "email",
+        subject: p.data.subject,
+        body: text,
+        status: !direct ? "handed_off" : res.ok ? "sent" : "failed",
+        error: res.ok ? null : res.error,
+        sentBy: actor(ctx),
+      })
+      .catch(() => undefined);
+  }
+  revalidatePath("/admin/customers");
+  if (!direct) return { ok: true, message: `Opened your email app with ${sent} customer${sent === 1 ? "" : "s"} in Bcc: press send there. Logged here.`, sentAt: Date.now() };
+  if (failed.length) return { ok: false, message: `Sent ${sent}, failed ${failed.length}: ${failed.slice(0, 5).join(", ")}${failed.length > 5 ? "…" : ""}`, sentAt: Date.now() };
+  return { ok: true, message: `Email sent to ${sent} customer${sent === 1 ? "" : "s"}.`, sentAt: Date.now() };
 }
