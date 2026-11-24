@@ -5,6 +5,7 @@ import { useState } from "react";
 import { cart } from "@/components/cart/cart-store";
 import { ButtonLabel, buttonClasses } from "@/components/ui/button";
 import { track } from "@/lib/analytics";
+import { metaAddToCart } from "@/lib/meta-pixel";
 import { isVariantPurchasable } from "@/lib/commerce/pricing";
 import { cn } from "@/lib/cn";
 import type { Product, ProductVariant } from "@/lib/types";
@@ -53,6 +54,7 @@ export function AddToCartButton({
   const onClick = () => {
     cart.add({ productId: product.id, variantId: variant!.id, quantity }, { open: openDrawer });
     track("add_to_cart", { product_id: product.id, variant_id: variant!.id, quantity, price: variant!.price });
+    metaAddToCart(product, variant!, quantity);
     setAdded(true);
     window.setTimeout(() => setAdded(false), 1600);
   };

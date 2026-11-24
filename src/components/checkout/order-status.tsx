@@ -3,9 +3,11 @@
 import { Check, Clock, Loader2, RefreshCw, XCircle } from "lucide-react";
 import { useCallback, useEffect, useState } from "react";
 import { LiveMap } from "@/components/tracking/live-map";
+import { metaPixel } from "@/config/meta";
 import { track } from "@/lib/analytics";
 import { cn } from "@/lib/cn";
 import { formatMoney } from "@/lib/commerce/pricing";
+import { markPurchaseSent, purchaseAlreadySent, purchaseBridgeUrl } from "@/lib/meta-pixel";
 import type { PublicOrder } from "@/lib/orders/types";
 import { isOnlinePayment, type OrderStatus, type PaymentStatus } from "@/lib/types";
 
@@ -76,6 +78,26 @@ export function OrderStatusView({
     const id = window.setInterval(() => document.visibilityState === "visible" && void refresh(), 20000);
     return () => window.clearInterval(id);
   }, [order.status, refresh]);
+
+  // Meta Purchase: once per order, only when the order truly succeeded (offline
+  // methods: placed; online: provider-confirmed paid). Sent from a clean bridge
+  // page in a no-referrer iframe so this page's private link never reaches Meta.
+  useEffect(() => {
+    if (!metaPixel.enabled || order.status === "cancelled") return;
+    if (online ? order.paymentStatus !== "paid" : order.paymentStatus === "failed") return;
+    if (Date.now() - Date.parse(order.createdAt) > 3 * 24 * 60 * 60 * 1000) return;
+    if (purchaseAlreadySent(order.id)) return;
+    markPurchaseSent(order.id);
+    const frame = document.createElement("iframe");
+    frame.src = purchaseBridgeUrl(order);
+    frame.referrerPolicy = "no-referrer";
+    frame.title = "";
+    frame.tabIndex = -1;
+    frame.setAttribute("aria-hidden", "true");
+    frame.style.cssText = "position:absolute;left:-9999px;width:1px;height:1px;border:0;opacity:0;pointer-events:none";
+    document.body.appendChild(frame);
+    window.setTimeout(() => frame.remove(), 30_000);
+  }, [order, online]);
 
   const cancelled = order.status === "cancelled";
   const onTheWay = order.fulfilment.method === "delivery" && order.status === "out_for_delivery";

@@ -11,6 +11,7 @@ import { useStore } from "@/components/providers/store-provider";
 import { ButtonLabel, buttonClasses } from "@/components/ui/button";
 import { siteConfig } from "@/config/site";
 import { track } from "@/lib/analytics";
+import { metaInitiateCheckout } from "@/lib/meta-pixel";
 import { cn } from "@/lib/cn";
 import { formatMoney } from "@/lib/commerce/pricing";
 import { isAgeRestricted, productById } from "@/data/products";
@@ -71,7 +72,7 @@ function Field({
 
 export function CheckoutForm() {
   const { lines, hydrated } = useCart();
-  const { settings } = useStore();
+  const { settings, byId } = useStore();
   const router = useRouter();
   const formRef = useRef<HTMLFormElement>(null);
   const zones = settings.deliveryZones;
@@ -95,7 +96,16 @@ export function CheckoutForm() {
     if (hydrated && lines.length && !started.current) {
       started.current = true;
       track("begin_checkout", { items: lines.length });
+      metaInitiateCheckout(
+        lines.map((l) => ({
+          productId: l.productId,
+          quantity: l.quantity,
+          unitPrice: byId(l.productId)?.variants.find((v) => v.id === l.variantId)?.price ?? null,
+        })),
+      );
     }
+    // Fires once, when the cart has loaded.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [hydrated, lines.length]);
 
   useEffect(() => {

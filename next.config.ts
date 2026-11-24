@@ -35,6 +35,14 @@ const nextConfig: NextConfig = {
       { source: "/:path*", headers: securityHeaders },
       { source: "/order/:path*", headers: [{ key: "Referrer-Policy", value: "no-referrer" }] },
       { source: "/rider/:path*", headers: [{ key: "Referrer-Policy", value: "no-referrer" }] },
+      // The Meta Purchase bridge is framed by our own order page (later entries win).
+      {
+        source: "/meta-pixel-bridge",
+        headers: [
+          { key: "X-Frame-Options", value: "SAMEORIGIN" },
+          { key: "Referrer-Policy", value: "no-referrer" },
+        ],
+      },
     ];
   },
   turbopack: {

@@ -9,6 +9,7 @@ import { ButtonLabel, buttonClasses } from "@/components/ui/button";
 import { isDevSamplePrice } from "@/config/commerce";
 import { isAgeRestricted } from "@/data/products";
 import { track } from "@/lib/analytics";
+import { metaAddToCart, metaViewContent } from "@/lib/meta-pixel";
 import { cn } from "@/lib/cn";
 import { formatMoney, isVariantPurchasable } from "@/lib/commerce/pricing";
 import type { Product } from "@/lib/types";
@@ -27,12 +28,19 @@ export function PurchasePanel({ slug }: { slug: string }) {
   const [qty, setQty] = useState(1);
   const [showBar, setShowBar] = useState(false);
   const anchorRef = useRef<HTMLDivElement>(null);
+  const viewSent = useRef<string | null>(null);
   const variant = product.variants.find((v) => v.id === variantId) ?? product.variants[0];
   const purchasable = variant ? isVariantPurchasable(product, variant) : false;
   const maxQty = Math.min(settings.maxQuantityPerLine, variant?.stockQuantity ?? Infinity);
 
   useEffect(() => {
     track("product_view", { product_id: product.id, category: product.category });
+    // Once per product page view (not again when the variant changes or effects re-run).
+    if (viewSent.current !== product.id) {
+      viewSent.current = product.id;
+      metaViewContent(product, product.variants[0]);
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [product.id, product.category]);
 
   // Mobile sticky bar appears once the main button scrolls out of view.
@@ -48,6 +56,7 @@ export function PurchasePanel({ slug }: { slug: string }) {
     if (!variant || !purchasable) return;
     cart.add({ productId: product.id, variantId: variant.id, quantity: qty }, { open: !goToCheckout });
     track("add_to_cart", { product_id: product.id, variant_id: variant.id, quantity: qty, price: variant.price });
+    metaAddToCart(product, variant, qty);
     if (goToCheckout) router.push("/checkout");
   };
 

@@ -1,5 +1,6 @@
 import type { Metadata, Viewport } from "next";
 import { Bricolage_Grotesque, Instrument_Serif, Outfit } from "next/font/google";
+import { metaPixel } from "@/config/meta";
 import { siteConfig } from "@/config/site";
 import "./globals.css";
 
@@ -31,6 +32,8 @@ export const metadata: Metadata = {
   },
   description: siteConfig.description,
   applicationName: siteConfig.name,
+  // Meta domain verification (Business Manager → Brand safety → Domains).
+  ...(metaPixel.domainVerification ? { other: { "facebook-domain-verification": metaPixel.domainVerification } } : {}),
   openGraph: {
     type: "website",
     siteName: siteConfig.name,
