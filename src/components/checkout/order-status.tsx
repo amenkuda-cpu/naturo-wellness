@@ -2,11 +2,12 @@
 
 import { Check, Clock, Loader2, RefreshCw, XCircle } from "lucide-react";
 import { useCallback, useEffect, useState } from "react";
+import { LiveMap } from "@/components/tracking/live-map";
 import { track } from "@/lib/analytics";
 import { cn } from "@/lib/cn";
 import { formatMoney } from "@/lib/commerce/pricing";
 import type { PublicOrder } from "@/lib/orders/types";
-import type { OrderStatus, PaymentStatus } from "@/lib/types";
+import { isOnlinePayment, type OrderStatus, type PaymentStatus } from "@/lib/types";
 
 const PAYMENT_COPY: Record<PaymentStatus, { label: string; tone: string }> = {
   unpaid: { label: "Pay on delivery / collection", tone: "bg-cream text-forest" },
@@ -41,6 +42,7 @@ export function OrderStatusView({
 }) {
   const [order, setOrder] = useState(initial);
   const [checking, setChecking] = useState(false);
+  const online = isOnlinePayment(order.paymentMethod);
 
   const refresh = useCallback(async () => {
     setChecking(true);
@@ -58,7 +60,7 @@ export function OrderStatusView({
 
   // Poll briefly while an online payment is being confirmed by the provider.
   useEffect(() => {
-    if (order.paymentMethod !== "paynow" || order.paymentStatus !== "pending") return;
+    if (!online || order.paymentStatus !== "pending") return;
     let n = 0;
     const id = window.setInterval(() => {
       n += 1;
@@ -66,9 +68,17 @@ export function OrderStatusView({
       else void refresh();
     }, 5000);
     return () => window.clearInterval(id);
-  }, [order.paymentMethod, order.paymentStatus, refresh]);
+  }, [online, order.paymentStatus, refresh]);
+
+  // Keep the page fresh while the order moves (confirmed → on the road → delivered).
+  useEffect(() => {
+    if (["completed", "cancelled"].includes(order.status)) return;
+    const id = window.setInterval(() => document.visibilityState === "visible" && void refresh(), 20000);
+    return () => window.clearInterval(id);
+  }, [order.status, refresh]);
 
   const cancelled = order.status === "cancelled";
+  const onTheWay = order.fulfilment.method === "delivery" && order.status === "out_for_delivery";
   const current = stepIndex(order.status);
   const pay = PAYMENT_COPY[order.paymentStatus];
   const money = (v: number) => formatMoney(v, order.currency);
@@ -78,7 +88,7 @@ export function OrderStatusView({
       <div className="space-y-8 lg:col-span-7">
         <div className="flex flex-wrap items-center gap-3">
           <span className={cn("rounded-full px-4 py-1.5 text-sm font-semibold", pay.tone)}>{pay.label}</span>
-          {order.paymentMethod === "paynow" && order.paymentStatus === "pending" && (
+          {online && order.paymentStatus === "pending" && (
             <button
               type="button"
               onClick={refresh}
@@ -134,6 +144,14 @@ export function OrderStatusView({
             </ol>
           )}
         </section>
+
+        {onTheWay && (
+          <section aria-labelledby="live-title">
+            <h2 id="live-title" className="eyebrow text-ink/70">Your delivery, live</h2>
+            <p className="mt-2 text-sm text-ink/70">Your rider is on the way. The map updates by itself.</p>
+            <LiveMap endpoint={`/api/tracking/${order.id}?t=${encodeURIComponent(token)}`} height={320} pollMs={8000} className="mt-4" />
+          </section>
+        )}
 
         <section aria-labelledby="details-title" className="grid gap-6 rounded-[2rem] bg-cream p-6 sm:grid-cols-2 sm:p-8">
           <h2 id="details-title" className="sr-only">Order details</h2>

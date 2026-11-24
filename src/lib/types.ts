@@ -123,7 +123,11 @@ export interface CartLine {
 
 export type FulfilmentMethod = "delivery" | "collection";
 
-export type PaymentMethodId = "cash_on_delivery" | "manual" | "paynow";
+export type PaymentMethodId = "cash_on_delivery" | "manual" | "paynow" | "pesepay";
+
+/** Methods confirmed only by the provider, server to server (never by staff). */
+export const ONLINE_PAYMENT_METHODS: readonly PaymentMethodId[] = ["paynow", "pesepay"];
+export const isOnlinePayment = (m: PaymentMethodId) => ONLINE_PAYMENT_METHODS.includes(m);
 
 export type OrderStatus =
   | "pending"

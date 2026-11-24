@@ -1,47 +1,37 @@
-import type { Metadata } from "next";
-import Link from "next/link";
-import { Suspense } from "react";
-import { Logo } from "@/components/brand/logo";
+import type { Metadata, Viewport } from "next";
+import { Plus_Jakarta_Sans } from "next/font/google";
+import { THEME_BOOT_SCRIPT } from "@/lib/admin-theme";
+
+/** The admin uses the Amey dashboard typeface for its calm, legible feel. */
+const jakarta = Plus_Jakarta_Sans({
+  subsets: ["latin"],
+  variable: "--font-admin",
+  display: "swap",
+  weight: ["400", "500", "600", "700", "800"],
+});
 
 export const metadata: Metadata = {
-  title: { default: "Admin", template: "%s | Naturo Admin" },
+  title: { default: "Naturo Admin", template: "%s | Naturo Admin" },
   robots: { index: false, follow: false },
 };
+
+export const viewport: Viewport = { themeColor: "#0d0e13" };
 
 // Every admin view reads the session at request time.
 export const instant = false;
 
-const nav = [
-  { href: "/admin", label: "Overview" },
-  { href: "/admin/orders", label: "Orders" },
-  { href: "/admin/products", label: "Products" },
-  { href: "/admin/settings", label: "Settings" },
-];
-
-export default function AdminLayout({ children }: { children: React.ReactNode }) {
+export default function AdminRootLayout({ children }: { children: React.ReactNode }) {
   return (
-    <div className="min-h-screen bg-[#F7F5EE]">
-      <header className="sticky top-0 z-40 border-b border-forest/10 bg-warm/90 backdrop-blur">
-        <div className="mx-auto flex h-16 max-w-7xl items-center gap-6 px-4 sm:px-6">
-          <Link href="/admin" className="text-lg" aria-label="Admin home">
-            <Logo className="h-11" />
-          </Link>
-          <span className="rounded-full bg-forest px-2.5 py-0.5 text-[0.65rem] font-semibold uppercase tracking-[0.14em] text-warm">Admin</span>
-          <nav aria-label="Admin" className="no-scrollbar ml-auto flex gap-1 overflow-x-auto">
-            {nav.map((n) => (
-              <Link key={n.href} href={n.href} className="rounded-full px-3 py-2 text-sm font-medium text-ink/70 hover:bg-forest/5 hover:text-forest">
-                {n.label}
-              </Link>
-            ))}
-            <Link href="/" className="rounded-full px-3 py-2 text-sm text-ink/70 hover:text-forest">
-              View site ↗
-            </Link>
-          </nav>
-        </div>
-      </header>
-      <main className="mx-auto max-w-7xl px-4 py-8 sm:px-6 lg:py-12">
-        <Suspense fallback={<p className="text-ink/70">Loading…</p>}>{children}</Suspense>
-      </main>
+    <div
+      id="admin-root"
+      data-theme="dark"
+      suppressHydrationWarning
+      className={`${jakarta.variable} admin-theme min-h-screen`}
+      style={{ fontFamily: "var(--font-admin), ui-sans-serif, system-ui, sans-serif" }}
+    >
+      {/* Applies the saved light/dark choice before first paint. */}
+      <script dangerouslySetInnerHTML={{ __html: THEME_BOOT_SCRIPT }} />
+      {children}
     </div>
   );
 }

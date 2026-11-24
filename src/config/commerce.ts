@@ -47,7 +47,6 @@ export const devSampleZones: DeliveryZone[] = [
  * no catalogue price yet. NEVER used in production builds.
  */
 export const devSamplePrices: Record<string, number> = {
-  // Muvhee intentionally left unpriced to exercise the "Price coming soon" state.
 };
 
 /** True when a variant's price came from `devSamplePrices` (labelled "Sample price" in development). */

@@ -76,7 +76,13 @@ function mapOrder(o: Row): OrderRecord {
     paymentStatus: o.payment_status,
     paymentMethod: o.payment_method,
     paymentReference: o.payment_reference,
-    paymentData: payment?.poll_url ? { pollUrl: payment.poll_url } : {},
+    paymentData: payment?.poll_url
+      ? {
+          pollUrl: payment.poll_url,
+          provider: payment.provider,
+          ...(payment.provider_reference ? { referenceNumber: payment.provider_reference } : {}),
+        }
+      : {},
     currency: o.currency,
     customer: { fullName: o.customer_name, phone: o.customer_phone, email: o.customer_email },
     customerId: o.customer_id,
@@ -94,6 +100,7 @@ function mapOrder(o: Row): OrderRecord {
       unitPrice: i.unit_price_cents,
       quantity: i.quantity,
       lineTotal: i.line_total_cents,
+      unitCost: i.unit_cost_cents ?? null,
     })),
     subtotal: o.subtotal_cents,
     discount: o.discount_cents,
@@ -135,7 +142,10 @@ export function createSupabaseRepository(client?: SupabaseClient): Repository {
         .select("*, product_variants(*)")
         .order("sort_order");
       if (error) throw error;
-      return (data ?? []).map(mapProduct);
+      // src/data/products.ts decides which products exist on the site; database
+      // rows for products removed from it (e.g. Muvhee) stay hidden.
+      const known = new Set(localProducts.map((p) => p.id));
+      return (data ?? []).filter((p: Row) => known.has(p.id)).map(mapProduct);
     },
 
     async loadDeliveryZones(): Promise<DeliveryZone[]> {
@@ -255,7 +265,18 @@ export function createSupabaseRepository(client?: SupabaseClient): Repository {
       if (patch.status) update.status = patch.status;
       if (patch.paymentStatus) update.payment_status = patch.paymentStatus;
       if (patch.paymentReference !== undefined) update.payment_reference = patch.paymentReference;
-      if (Object.keys(update).length) {
+      let becamePaid = false;
+      if (patch.paymentStatus === "paid") {
+        // Conditional: only the update that actually flips the order to paid wins.
+        const { data: flipped, error } = await db().from("orders").update(update).eq("id", id).neq("payment_status", "paid").select("id");
+        if (error) throw error;
+        becamePaid = (flipped ?? []).length > 0;
+        if (!becamePaid) {
+          const current = await repo.getOrder(id);
+          if (!current) throw new Error("Order not found");
+          return { ...current, becamePaid: false };
+        }
+      } else if (Object.keys(update).length) {
         const { error } = await db().from("orders").update(update).eq("id", id);
         if (error) throw error;
       }
@@ -280,7 +301,7 @@ export function createSupabaseRepository(client?: SupabaseClient): Repository {
       if (evErr) throw evErr;
       const order = await repo.getOrder(id);
       if (!order) throw new Error("Order not found");
-      return order;
+      return { ...order, becamePaid };
     },
 
     async updateVariant(_productId, variantId, update) {

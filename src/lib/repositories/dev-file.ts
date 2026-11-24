@@ -147,6 +147,8 @@ export function createDevFileRepository(opts: { samplePrices: boolean }): Reposi
       return mutate((data) => {
         const order = data.orders.find((o) => o.id === id);
         if (!order) throw new Error("Order not found");
+        if (patch.paymentStatus === "paid" && order.paymentStatus === "paid") return { ...order, becamePaid: false };
+        const becamePaid = patch.paymentStatus === "paid";
         Object.assign(order, patch);
         order.history.push({
           at: new Date().toISOString(),
@@ -154,7 +156,7 @@ export function createDevFileRepository(opts: { samplePrices: boolean }): Reposi
           paymentStatus: patch.paymentStatus ?? null,
           ...note,
         });
-        return order;
+        return { ...order, becamePaid };
       });
     },
 

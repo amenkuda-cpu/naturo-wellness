@@ -73,7 +73,7 @@ describe("purchasability", () => {
   it("only catalogue products with a starting price are purchasable", () => {
     for (const p of products) expect(isProductPurchasable(p)).toBe(fromPrice(p) !== null);
     // Products still waiting for a price stay "Price coming soon".
-    expect(isProductPurchasable(products.find((p) => p.id === "muvhee")!)).toBe(false);
+    expect(isProductPurchasable(makeProduct("unpriced", null))).toBe(false);
     expect(isProductPurchasable(products.find((p) => p.id === "ginger-shot")!)).toBe(true);
   });
 });

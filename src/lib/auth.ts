@@ -7,6 +7,8 @@ import { createUserClient } from "@/lib/supabase/server";
 export interface SessionUser {
   id: string;
   email: string | null;
+  /** Set (server-side only, in app_metadata) while the account still has a placeholder password. */
+  mustChangePassword: boolean;
 }
 
 /** Returns the verified Supabase user (validated with the auth server), or null. */
@@ -15,7 +17,7 @@ export async function getSessionUser(): Promise<SessionUser | null> {
   if (!supabase) return null;
   const { data, error } = await supabase.auth.getUser();
   if (error || !data.user) return null;
-  return { id: data.user.id, email: data.user.email ?? null };
+  return { id: data.user.id, email: data.user.email ?? null, mustChangePassword: data.user.app_metadata?.must_change_password === true };
 }
 
 export type StaffContext =
@@ -43,9 +45,11 @@ export async function getStaffContext(): Promise<StaffContext | null> {
 }
 
 /** Use at the top of every admin page AND every admin Server Action. */
-export async function requireStaff(opts: { admin?: boolean } = {}): Promise<StaffContext> {
+export async function requireStaff(opts: { admin?: boolean; allowPasswordSetup?: boolean } = {}): Promise<StaffContext> {
   const ctx = await getStaffContext();
-  if (!ctx) redirect("/account/login?next=/admin");
+  if (!ctx) redirect("/admin/login");
+  // Placeholder password: nothing else is reachable until the admin picks their own.
+  if (ctx.mode === "supabase" && ctx.user.mustChangePassword && !opts.allowPasswordSetup) redirect("/admin/account?setup=1");
   if (opts.admin && ctx.role !== "admin") redirect("/admin?error=forbidden");
   return ctx;
 }

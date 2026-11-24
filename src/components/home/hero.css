@@ -1,0 +1,228 @@
+/* Home hero: drink carousel (hero.tsx). Colours are registered so the whole scene cross-fades. */
+@property --nh-bg { syntax: "<color>"; inherits: true; initial-value: #f2ae3b; }
+@property --nh-arch { syntax: "<color>"; inherits: true; initial-value: #f7c96c; }
+@property --nh-ink { syntax: "<color>"; inherits: true; initial-value: #3b2205; }
+
+.nh-hero {
+  --nh-ease: cubic-bezier(0.65, 0, 0.2, 1);
+  --head-top: 6.5rem;
+  --stage-h: 68vh;
+  --stage-base: 3vh;
+  background-color: var(--nh-bg);
+  transition: --nh-bg 0.9s var(--nh-ease), --nh-arch 0.9s var(--nh-ease), --nh-ink 0.9s var(--nh-ease);
+}
+.nh-light {
+  background:
+    radial-gradient(60% 55% at 50% 18%, rgb(255 255 255 / 0.34), transparent 70%),
+    radial-gradient(80% 60% at 50% 110%, rgb(0 0 0 / 0.12), transparent 70%);
+}
+.nh-arch {
+  width: min(44vw, 40rem);
+  height: 66vh;
+  background-color: var(--nh-arch);
+}
+.nh-ring {
+  width: min(80vh, 62vw);
+  aspect-ratio: 1;
+  top: calc(100% - var(--stage-base) - var(--stage-h) * 0.62);
+  translate: -50% -50%;
+  animation: nh-spin 60s linear infinite;
+}
+.nh-ring-text {
+  font-family: var(--font-display);
+  font-weight: 800;
+  font-size: 25px;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  fill: rgb(255 255 255 / 0.55);
+}
+@keyframes nh-spin { to { rotate: 360deg; } }
+
+/* Headline */
+.nh-head-layer { top: var(--head-top); z-index: 8; }
+.nh-head {
+  font-family: var(--font-display);
+  font-weight: 800;
+  font-stretch: 75%;
+  font-variation-settings: "wdth" 75;
+  text-transform: uppercase;
+  text-align: center;
+  font-size: min(23vh, 16vw);
+  line-height: 0.84;
+  letter-spacing: -0.01em;
+  color: var(--nh-ink);
+}
+.nh-line { padding: 0.04em 0.06em 0; margin-top: -0.04em; }
+.nh-ch {
+  display: inline-block;
+  animation: nh-in 0.95s cubic-bezier(0.2, 0.85, 0.2, 1) both;
+  animation-delay: calc(var(--i) * 24ms + var(--l) * 70ms + 0.12s);
+}
+.nh-leave .nh-ch {
+  animation: nh-out 0.55s cubic-bezier(0.6, 0, 0.8, 0.3) both;
+  animation-delay: calc(var(--i) * 12ms);
+}
+@keyframes nh-in { from { transform: translateY(108%) rotate(7deg); } }
+@keyframes nh-out { to { transform: translateY(-108%) rotate(-5deg); } }
+
+/* Bottles: one stage, six slots. Neighbours sit blurred at the edges, like depth of field. */
+.nh-item {
+  --tx: 0vw;
+  --ty: 0vh;
+  --rot: 0deg;
+  --sc: 1;
+  --bl: 0px;
+  --op: 1;
+  position: absolute;
+  left: 50%;
+  bottom: var(--stage-base);
+  height: var(--stage-h);
+  aspect-ratio: 2 / 3;
+  z-index: 30;
+  transform: translate3d(calc(-50% + var(--tx)), var(--ty), 0) rotate(var(--rot)) scale(var(--sc));
+  transform-origin: 50% 80%;
+  filter: blur(var(--bl));
+  opacity: var(--op);
+  transition: transform 1.05s var(--nh-ease), filter 1.05s var(--nh-ease), opacity 0.8s var(--nh-ease);
+  will-change: transform;
+}
+.nh-item[data-jump] { transition: none; }
+.nh-item[data-slot="1"], .nh-item[data-slot="-1"] { --ty: -15vh; --sc: 0.58; --bl: 2.5px; z-index: 20; }
+.nh-item[data-slot="1"] { --tx: 27vw; --rot: 10deg; }
+.nh-item[data-slot="-1"] { --tx: -27vw; --rot: -10deg; }
+.nh-item[data-slot="2"], .nh-item[data-slot="-2"] { --ty: -24vh; --sc: 0.46; --bl: 6px; --op: 0.92; z-index: 10; }
+.nh-item[data-slot="2"] { --tx: 46vw; --rot: 18deg; }
+.nh-item[data-slot="-2"] { --tx: -46vw; --rot: -18deg; }
+/* Everything further away waits off-screen on its own side, invisible, ready to slide in. */
+.nh-item[data-slot="far"], .nh-item[data-slot="-far"] { --ty: -24vh; --sc: 0.36; --bl: 8px; --op: 0; z-index: 5; }
+.nh-item[data-slot="far"] { --tx: 64vw; --rot: 24deg; }
+.nh-item[data-slot="-far"] { --tx: -64vw; --rot: -24deg; }
+
+.nh-bottle { animation: nh-float 6.5s ease-in-out infinite; animation-delay: var(--d); }
+@keyframes nh-float {
+  0%, 100% { translate: 0 0; rotate: -1.4deg; }
+  50% { translate: 0 -1.8vh; rotate: 1.4deg; }
+}
+.nh-item[data-slot="0"] .nh-tilt {
+  transform: perspective(1100px) rotateY(calc(var(--mx, 0) * 10deg)) rotateX(calc(var(--my, 0) * -5deg));
+  transition: transform 0.5s ease-out;
+  animation: nh-settle 1.3s cubic-bezier(0.25, 1.25, 0.35, 1) both;
+}
+@keyframes nh-settle { from { rotate: 9deg; scale: 0.94; } }
+.nh-shadow {
+  bottom: calc(var(--stage-base) - 1.2vh);
+  width: calc(var(--stage-h) * 0.42);
+  height: 3.2vh;
+  translate: -50% 0;
+  border-radius: 50%;
+  background: radial-gradient(closest-side, rgb(0 0 0 / 0.28), transparent);
+  z-index: 25;
+}
+
+/* Ingredients at three depths; the pointer moves near ones more. */
+.nh-ing {
+  --ix: 0vw;
+  --iy: 0vh;
+  --w: 8vw;
+  --ir: 0deg;
+  --ib: 0px;
+  --depth: 20;
+  position: absolute;
+  left: 50%;
+  top: var(--iy);
+  width: var(--w);
+  z-index: 25;
+  opacity: 0;
+  filter: blur(var(--ib));
+  transform: translate3d(calc(-50% + var(--ix) * 0.35), 6vh, 0) rotate(calc(var(--ir) - 40deg)) scale(0.3);
+  transition: transform 0.9s cubic-bezier(0.6, 0, 0.8, 0.4), opacity 0.45s ease-in;
+  pointer-events: none;
+}
+.nh-ing[data-on] {
+  opacity: 1;
+  transform: translate3d(calc(-50% + var(--ix)), 0, 0) rotate(var(--ir)) scale(1);
+  transition: transform 1.2s cubic-bezier(0.2, 0.9, 0.25, 1.1), opacity 0.7s ease-out;
+  transition-delay: calc(0.28s + var(--k-delay, 0s));
+}
+.nh-ing[data-k="0"] { --ix: -19vw; --iy: 20vh; --w: 8.5vw; --ir: -18deg; --depth: 34; z-index: 40; --k-delay: 0s; }
+.nh-ing[data-k="1"] { --ix: 20vw; --iy: 17vh; --w: 6vw; --ir: 26deg; --ib: 1px; --depth: 14; --k-delay: 0.08s; }
+.nh-ing[data-k="2"] { --ix: 17vw; --iy: 60vh; --w: 11.5vw; --ir: 12deg; --ib: 3px; --depth: 52; z-index: 40; --k-delay: 0.16s; }
+.nh-ing[data-k="3"] { --ix: -23vw; --iy: 64vh; --w: 7vw; --ir: -32deg; --ib: 0.5px; --depth: 22; --k-delay: 0.24s; }
+.nh-ing-par {
+  transform: translate3d(calc(var(--mx, 0) * var(--depth) * 1px), calc(var(--my, 0) * var(--depth) * 0.7px), 0);
+  transition: transform 0.6s ease-out;
+}
+.nh-ing-float { animation: nh-drift 7s ease-in-out infinite; animation-delay: var(--d); }
+/* Clipping the transparent 2px border stops Chrome drawing the rotated image box as a dotted line. */
+.nh-ing-float img { width: 100%; height: auto; clip-path: inset(2px); }
+@keyframes nh-drift {
+  0%, 100% { translate: 0 0; rotate: -4deg; }
+  50% { translate: 0 -2.4vh; rotate: 5deg; }
+}
+
+/* Controls */
+.nh-ui {
+  bottom: 3.4rem;
+  display: grid;
+  gap: 0.35rem 1.5rem;
+  align-items: end;
+  grid-template-columns: minmax(0, 24rem) 1fr auto;
+  grid-template-areas: "chips . ." "bars . ." "meta . ctrl";
+}
+.nh-meta { animation: nh-meta 0.7s cubic-bezier(0.2, 0.8, 0.2, 1) both; }
+@keyframes nh-meta { from { opacity: 0; transform: translateY(10px); } }
+.nh-progress[data-state="todo"] { transform: scaleX(0); }
+.nh-progress[data-state="run"] {
+  transform: scaleX(0);
+  animation-name: nh-progress;
+  animation-timing-function: linear;
+  animation-fill-mode: forwards;
+}
+@keyframes nh-progress { to { transform: scaleX(1); } }
+.nh-wave { animation: nh-wave 16s linear infinite; }
+@keyframes nh-wave { to { transform: translateX(-50%); } }
+
+/* Phones and tablets: taller words, bottle in the lower half, neighbours peek in. */
+@media (max-width: 63.99rem) {
+  .nh-hero { --head-top: 6.5rem; --stage-h: 44svh; --stage-base: 12.5rem; }
+  .nh-head { font-size: min(14svh, 20.5vw); }
+  .nh-arch { width: 78vw; height: 58svh; }
+  .nh-ring { width: 112vw; }
+  .nh-item[data-slot="1"] { --tx: 42vw; --ty: -9svh; --sc: 0.46; --bl: 2px; }
+  .nh-item[data-slot="-1"] { --tx: -42vw; --ty: -9svh; --sc: 0.46; --bl: 2px; }
+  .nh-item[data-slot="2"], .nh-item[data-slot="-2"] { --op: 0; }
+  .nh-item[data-slot="2"] { --tx: 70vw; }
+  .nh-item[data-slot="-2"] { --tx: -70vw; }
+  .nh-ing[data-k="0"] { --ix: -32vw; --iy: 38svh; --w: 19vw; }
+  .nh-ing[data-k="1"] { --ix: 33vw; --iy: 34svh; --w: 14vw; }
+  .nh-ing[data-k="2"] { --ix: 27vw; --iy: 62svh; --w: 22vw; }
+  .nh-ing[data-k="3"] { display: none; }
+  .nh-ui {
+    bottom: 2.2rem;
+    gap: 0.5rem 0.75rem;
+    grid-template-columns: minmax(0, 1fr) auto;
+    grid-template-areas: "meta ctrl" "chips chips" "bars bars";
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .nh-hero,
+  .nh-item,
+  .nh-ing,
+  .nh-ing[data-on],
+  .nh-ing-par,
+  .nh-item[data-slot="0"] .nh-tilt {
+    transition-duration: 0.01ms !important;
+    transition-delay: 0s !important;
+  }
+  .nh-ring,
+  .nh-ch,
+  .nh-bottle,
+  .nh-ing-float,
+  .nh-wave,
+  .nh-meta,
+  .nh-item[data-slot="0"] .nh-tilt {
+    animation: none !important;
+  }
+  .nh-leave { display: none; }
+}

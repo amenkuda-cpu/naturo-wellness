@@ -7,9 +7,9 @@ import { NextResponse, type NextRequest } from "next/server";
  * re-checked on the server (requireStaff / RLS); this is not a security gate.
  */
 export async function proxy(request: NextRequest) {
+  const local = /^(localhost|127\.0\.0\.1)(:\d+)?$/.test(request.headers.get("host") ?? "");
   const isHttp =
-    request.headers.get("x-forwarded-proto") === "http" ||
-    request.nextUrl.protocol === "http:";
+    !local && (request.headers.get("x-forwarded-proto") === "http" || request.nextUrl.protocol === "http:");
   if (isHttp || request.headers.get("host") === "www.getnaturo.com") {
     const target = request.nextUrl.clone();
     target.protocol = "https:";

@@ -17,8 +17,11 @@ describe("phone numbers", () => {
       expect(isValidPhone(p), p).toBe(true);
     }
   });
+  it("accepts South African mobiles (we deliver there)", () => {
+    for (const p of ["082 123 4567", "0612345678", "+27 82 123 4567", "27721234567"]) expect(isValidPhone(p), p).toBe(true);
+  });
   it("rejects junk", () => {
-    for (const p of ["12345", "abc", "0612345678", "+263 77 123"]) expect(isValidPhone(p), p).toBe(false);
+    for (const p of ["12345", "abc", "0212345678", "+263 77 123"]) expect(isValidPhone(p), p).toBe(false);
   });
   it("normalises separators", () => {
     expect(normalisePhone("+263 (77) 123-4567")).toBe("+263771234567");

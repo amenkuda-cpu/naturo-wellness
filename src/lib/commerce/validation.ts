@@ -8,8 +8,9 @@ export function normalisePhone(raw: string): string {
 
 export function isValidPhone(raw: string): boolean {
   const p = normalisePhone(raw);
-  // Zimbabwe mobile (07X XXX XXXX / +263 7X XXX XXXX) or any E.164 number.
-  return /^(?:\+?263|0)7\d{8}$/.test(p) || /^\+[1-9]\d{8,14}$/.test(p);
+  // Zimbabwe mobile (07X XXX XXXX / +263 7X XXX XXXX), South Africa mobile
+  // (06X/07X/08X XXX XXXX / +27 …), or any E.164 number.
+  return /^(?:\+?263|0)7\d{8}$/.test(p) || /^(?:\+?27|0)[6-8]\d{8}$/.test(p) || /^\+[1-9]\d{8,14}$/.test(p);
 }
 
 const cartLineSchema = z.object({
@@ -36,7 +37,7 @@ const customerSchema = z.object({
   phone: z
     .string()
     .trim()
-    .refine(isValidPhone, "Enter a valid phone number, e.g. 077 123 4567 or +263 77 123 4567.")
+    .refine(isValidPhone, "Enter a valid phone number, e.g. 077 123 4567, +263 77 123 4567 or +27 82 123 4567.")
     .transform(normalisePhone),
   email: z
     .union([z.literal(""), z.email("Enter a valid email address.").max(200)])
@@ -60,7 +61,7 @@ export const fulfilmentSchema = z.discriminatedUnion("method", [
   z.object({ method: z.literal("collection") }),
 ]);
 
-export const paymentMethodSchema = z.enum(["cash_on_delivery", "manual", "paynow"], {
+export const paymentMethodSchema = z.enum(["cash_on_delivery", "manual", "paynow", "pesepay"], {
   error: "Choose a payment method.",
 });
 

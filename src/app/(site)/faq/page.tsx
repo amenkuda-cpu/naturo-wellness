@@ -11,7 +11,7 @@ export const metadata: Metadata = {
 const faqs = [
   {
     q: "What does Naturo make?",
-    a: "Natural wellness shots, traditional Zimbabwean favourites such as Maheu and Muvhee, and herbal teas and powders, proudly made in Zimbabwe.",
+    a: "Natural wellness shots, traditional Zimbabwean favourites such as Maheu, and herbal teas and powders, proudly made in Zimbabwe.",
   },
   {
     q: "Where can I see the ingredients?",

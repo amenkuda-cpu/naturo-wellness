@@ -3,8 +3,9 @@
 import { revalidatePath, updateTag } from "next/cache";
 import { z } from "zod";
 import { requireStaff, type StaffContext } from "@/lib/auth";
-import { refreshPaymentStatus } from "@/lib/orders/service";
+import { emailReceipt, refreshPaymentStatus } from "@/lib/orders/service";
 import { getStaffRepository } from "@/lib/repositories";
+import { isOnlinePayment } from "@/lib/types";
 
 /**
  * Admin Server Actions. EVERY action re-checks staff access on the server;
@@ -53,15 +54,28 @@ export async function updatePaymentStatusAction(formData: FormData) {
   const repo = await getStaffRepository(ctx);
   const order = await repo.getOrder(parsed.data.orderId);
   if (!order) throw new Error("Order not found.");
-  if (order.paymentMethod === "paynow" && parsed.data.paymentStatus === "paid") {
+  if (isOnlinePayment(order.paymentMethod) && parsed.data.paymentStatus === "paid") {
     throw new Error("Online payments can only be confirmed by the payment provider.");
   }
-  await repo.updateOrder(
+  const updated = await repo.updateOrder(
     order.id,
     { paymentStatus: parsed.data.paymentStatus },
     { note: `Payment marked ${parsed.data.paymentStatus} by staff`, actor: actor(ctx) },
   );
+  if (updated.becamePaid) await emailReceipt(updated, actor(ctx));
   revalidatePath(`/admin/orders/${order.id}`);
+}
+
+/** Emails the payment receipt again (paid orders only). */
+export async function resendReceiptAction(formData: FormData) {
+  const ctx = await requireStaff();
+  const id = z.uuid().parse(formData.get("orderId"));
+  const repo = await getStaffRepository(ctx);
+  const order = await repo.getOrder(id);
+  if (!order) throw new Error("Order not found.");
+  if (order.paymentStatus !== "paid") throw new Error("Only paid orders have a receipt.");
+  await emailReceipt(order, actor(ctx));
+  revalidatePath(`/admin/orders/${id}`);
 }
 
 export async function recheckPaymentAction(formData: FormData) {

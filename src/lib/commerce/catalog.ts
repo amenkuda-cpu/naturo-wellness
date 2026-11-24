@@ -9,7 +9,9 @@ import type { CurrencyCode, DeliveryZone, Product } from "@/lib/types";
 /** Cached catalogue for rendering. Order creation always reloads fresh data. */
 export async function getCatalog(): Promise<Product[]> {
   "use cache";
-  cacheLife("minutes");
+  // Daily background refresh keeps KV writes within the free plan (1,000/day); admin edits
+  // still update instantly through updateTag("catalog").
+  cacheLife("days");
   cacheTag("catalog");
   return getRepository().loadCatalog();
 }
@@ -34,7 +36,9 @@ export interface StoreSettings {
 
 export async function getStoreSettings(): Promise<StoreSettings> {
   "use cache";
-  cacheLife("minutes");
+  // Daily background refresh keeps KV writes within the free plan (1,000/day); admin edits
+  // still update instantly through updateTag("catalog").
+  cacheLife("days");
   cacheTag("catalog");
   const repo = getRepository();
   const paymentMethods = enabledPaymentMethods();

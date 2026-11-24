@@ -6,16 +6,21 @@ const securityHeaders = [
   { key: "X-Frame-Options", value: "DENY" },
   // Order links carry a private token: never leak full URLs to other sites.
   { key: "Referrer-Policy", value: "strict-origin-when-cross-origin" },
-  { key: "Permissions-Policy", value: "camera=(), microphone=(), geolocation=(), payment=()" },
+  // Geolocation is allowed for this site only: the rider page shares live GPS during a delivery.
+  { key: "Permissions-Policy", value: "camera=(), microphone=(), geolocation=(self), payment=()" },
   { key: "Strict-Transport-Security", value: "max-age=63072000; includeSubDomains; preload" },
 ];
 
 const nextConfig: NextConfig = {
   cacheComponents: true,
+  // Low-memory laptops: NEXT_BUILD_CPUS=1 builds pages one worker at a time.
+  ...(process.env.NEXT_BUILD_CPUS ? { experimental: { cpus: Number(process.env.NEXT_BUILD_CPUS) } } : {}),
   partialPrefetching: false,
   poweredByHeader: false,
   // No Next.js dev-tools badge over the page (keeps local reviews and recordings clean).
   devIndicators: false,
+  // Local testing via 127.0.0.1 (browsers that pinned HTTPS for "localhost").
+  allowedDevOrigins: ["127.0.0.1"],
   // Low-memory machines: run `npx tsc --noEmit` first, then build with
   // SKIP_BUILD_TYPECHECK=1 so the build doesn't type-check a second time.
   typescript: { ignoreBuildErrors: process.env.SKIP_BUILD_TYPECHECK === "1" },
@@ -29,6 +34,7 @@ const nextConfig: NextConfig = {
     return [
       { source: "/:path*", headers: securityHeaders },
       { source: "/order/:path*", headers: [{ key: "Referrer-Policy", value: "no-referrer" }] },
+      { source: "/rider/:path*", headers: [{ key: "Referrer-Policy", value: "no-referrer" }] },
     ];
   },
   turbopack: {

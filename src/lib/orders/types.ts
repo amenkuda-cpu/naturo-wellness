@@ -46,7 +46,8 @@ export interface OrderRecord {
     zoneName: string | null;
     address: OrderAddress | null;
   };
-  lines: PricedLine[];
+  /** unitCost: what one unit cost Naturo when the order was placed (null = not entered). */
+  lines: Array<PricedLine & { unitCost?: number | null }>;
   subtotal: number;
   discount: number;
   deliveryFee: number;
@@ -75,6 +76,13 @@ export interface VariantUpdate {
   stockQuantity?: number | null;
 }
 
+/**
+ * `becamePaid` is true only for the single update that moved the order to paid
+ * (a "paid" update on an already-paid order changes nothing), so side effects
+ * such as the receipt email run exactly once even when updates race.
+ */
+export type UpdatedOrder = OrderRecord & { becamePaid?: boolean };
+
 export interface Repository {
   kind: "supabase" | "dev-file" | "static";
   /** Whether orders can be stored. */
@@ -91,7 +99,7 @@ export interface Repository {
     id: string,
     patch: Partial<Pick<OrderRecord, "status" | "paymentStatus" | "paymentReference" | "paymentData">>,
     historyNote: Omit<OrderHistoryEntry, "at" | "status" | "paymentStatus">,
-  ): Promise<OrderRecord>;
+  ): Promise<UpdatedOrder>;
   updateVariant(productId: string, variantId: string, update: VariantUpdate): Promise<void>;
   setProductEnabled(productId: string, enabled: boolean): Promise<void>;
 }

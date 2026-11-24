@@ -13,5 +13,6 @@ export async function GET(request: Request) {
     const { error } = (await supabase?.auth.exchangeCodeForSession(code)) ?? { error: true };
     if (!error) return NextResponse.redirect(new URL(safeNext, url.origin));
   }
-  return NextResponse.redirect(new URL("/account/login?error=link", url.origin));
+  const login = safeNext.startsWith("/admin") ? "/admin/login" : "/account/login";
+  return NextResponse.redirect(new URL(`${login}?error=link`, url.origin));
 }

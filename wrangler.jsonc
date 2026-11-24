@@ -3,7 +3,9 @@
   "name": "naturo-wellness",
   "main": ".open-next/worker.js",
   "compatibility_date": "2026-10-23",
-  "compatibility_flags": ["nodejs_compat"],
+  // no_handle_cross_request_promise_resolution: Next.js shares in-flight cache work between
+  // visitors; without this, Cloudflare aborts those requests at random (500/503 on cart quote, pages).
+  "compatibility_flags": ["nodejs_compat", "no_handle_cross_request_promise_resolution"],
   "assets": {
     "directory": ".open-next/assets",
     "binding": "ASSETS"
@@ -58,6 +60,10 @@
     "PAYMENT_MANUAL_ENABLED": "true",
     "PAYMENT_MANUAL_INSTRUCTIONS": "Our team will contact you with payment details to confirm your order.",
     "PAYMENT_PAYNOW_ENABLED": "false",
+    "PAYMENT_PESEPAY_ENABLED": "true",
+    "NATURO_DISPATCH_LAT": "-17.824752",
+    "NATURO_DISPATCH_LNG": "31.051590",
+    "NATURO_DISPATCH_LABEL": "Naturo kitchen · Realtime Building, cnr Central Ave & Third St, Harare",
     "NEXT_PUBLIC_TAX_RATE_BPS": "0",
     "NEXT_PUBLIC_COLLECTION_ENABLED": "true",
     "NEXT_PUBLIC_ANALYTICS_PROVIDER": "none"

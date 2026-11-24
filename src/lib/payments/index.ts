@@ -11,6 +11,14 @@ import {
   parsePaynowMessage,
   verifyPaynowHash,
 } from "./paynow-protocol";
+import {
+  PESEPAY_BASE,
+  mapPesepayStatus,
+  pesepayAmountMatches,
+  pesepayDecrypt,
+  pesepayEncrypt,
+  type PesepayTransaction,
+} from "./pesepay-protocol";
 
 /**
  * Modular payment providers. Add a provider by implementing PaymentProvider
@@ -91,7 +99,45 @@ const paynow: PaymentProvider = {
   },
 };
 
-const providers: PaymentProvider[] = [paynow, manual, cashOnDelivery];
+function pesepayBase() {
+  return env.payments.pesepay.sandbox ? PESEPAY_BASE.sandbox : PESEPAY_BASE.live;
+}
+
+const pesepay: PaymentProvider = {
+  id: "pesepay",
+  label: "Pay now: EcoCash, InnBucks, O'mari, Zimswitch, Visa & Mastercard",
+  description: "You'll be taken to Pesepay's secure checkout to pay. Your order is confirmed as soon as payment clears.",
+  enabled: () => env.payments.pesepay.enabled,
+  initialStatus: "pending",
+  async initiate(order, ctx) {
+    const { integrationKey, encryptionKey } = env.payments.pesepay;
+    const body = {
+      amountDetails: { amount: order.total / 100, currencyCode: order.currency },
+      reasonForPayment: `Naturo Wellness order ${order.orderNumber}`,
+      resultUrl: `${env.siteUrl}/api/payments/pesepay/result`,
+      returnUrl: ctx.returnUrl,
+      merchantReference: order.orderNumber,
+    };
+    const res = await fetch(`${pesepayBase()}/payments/initiate`, {
+      method: "POST",
+      headers: { authorization: integrationKey, "content-type": "application/json" },
+      body: JSON.stringify({ payload: pesepayEncrypt(body, encryptionKey) }),
+      cache: "no-store",
+    });
+    const json = (await res.json().catch(() => ({}))) as { payload?: string; message?: string };
+    if (!res.ok || !json.payload) throw new Error(`Pesepay initiation failed: ${json.message ?? res.status}`);
+    const tx = pesepayDecrypt<PesepayTransaction>(json.payload, encryptionKey);
+    if (!tx.redirectUrl || !tx.referenceNumber || !tx.pollUrl) throw new Error("Pesepay response missing fields.");
+    return {
+      kind: "redirect",
+      url: tx.redirectUrl,
+      reference: tx.referenceNumber,
+      providerData: { provider: "pesepay", pollUrl: tx.pollUrl, referenceNumber: tx.referenceNumber },
+    };
+  },
+};
+
+const providers: PaymentProvider[] = [pesepay, paynow, manual, cashOnDelivery];
 
 export function enabledPaymentMethods(): PaymentMethodInfo[] {
   return providers.filter((p) => p.enabled()).map(({ id, label, description }) => ({ id, label, description }));
@@ -123,4 +169,40 @@ export async function verifyPaynowPayment(order: OrderRecord): Promise<{
     return { status: "failed", reference: getField(values, "paynowreference") ?? null };
   }
   return { status: mapped, reference: getField(values, "paynowreference") ?? null };
+}
+
+/**
+ * Asks Pesepay for the authoritative status of a transaction, using the
+ * reference number WE stored at initiation, and checks the amount.
+ */
+export async function verifyPesepayPayment(order: OrderRecord): Promise<{
+  status: PaymentStatus;
+  reference: string | null;
+} | null> {
+  const reference = order.paymentReference ?? order.paymentData.referenceNumber;
+  if (!reference || !env.payments.pesepay.enabled) return null;
+  const { integrationKey, encryptionKey } = env.payments.pesepay;
+  const url = `${pesepayBase()}/payments/check-payment?referenceNumber=${encodeURIComponent(reference)}`;
+  const res = await fetch(url, {
+    headers: { authorization: integrationKey, "content-type": "application/json" },
+    cache: "no-store",
+  });
+  if (!res.ok) return null;
+  const json = (await res.json().catch(() => ({}))) as { payload?: string };
+  if (!json.payload) return null;
+  const tx = pesepayDecrypt<PesepayTransaction>(json.payload, encryptionKey);
+  if (tx.referenceNumber && tx.referenceNumber !== reference) return null;
+  if (tx.merchantReference && tx.merchantReference !== order.orderNumber) return null;
+  const mapped = mapPesepayStatus(tx.transactionStatus);
+  if (mapped === "paid" && !pesepayAmountMatches(tx.amountDetails?.amount, order.total)) {
+    return { status: "failed", reference };
+  }
+  return { status: mapped, reference };
+}
+
+/** Provider-verified status for any online payment method. */
+export async function verifyOnlinePayment(order: OrderRecord) {
+  if (order.paymentMethod === "pesepay") return verifyPesepayPayment(order);
+  if (order.paymentMethod === "paynow") return verifyPaynowPayment(order);
+  return null;
 }

@@ -216,12 +216,34 @@ Security model (verified by `npm run test:db`):
 
 Never grant roles from the browser, and never set `NATURO_DEV_ADMIN` in production (it is ignored there anyway).
 
+## Admin dashboard
+
+`https://getnaturo.com/admin` (sign in at `/admin/login` with email + password, a one-time email link, or a
+password reset). Only users in `staff_members` get in. Admins can change their password under **My account**.
+
+| Page | What it does |
+| --- | --- |
+| Overview | Store status ring, today's revenue/orders, month profit, open queries, pipeline, 14-day revenue & profit chart, "needs you" list, activity timeline. Refreshes every 45 s and reconciles waiting online payments. |
+| Orders | Search + status filters; order page with progress steps, profit per order, call/WhatsApp, status & payment controls. |
+| Live map | Every delivery on the road on an OpenStreetMap map, rider trails, road routes and ETAs (OSRM). |
+| Queries | Messages from the Contact page and order pages (linked to the order). Status + internal note, call/WhatsApp/email. |
+| Profit | Revenue, cost of goods, expenses, net profit by period; best sellers; expense log; unit costs per product. |
+
+**Live tracking:** on an order, *Create rider link* → send it on WhatsApp → the rider taps *Start delivery* on
+their phone and its GPS streams to the dashboard (and to the customer's order page while it's on the way).
+*Mark as delivered* completes the order. The drop-off pin is found from the address (OpenStreetMap
+Nominatim); staff can move it by tapping the map. Data needs migration `20261120000000_admin_ops.sql`.
+
+**Profit:** each order line stores the unit cost at the time of sale (`order_items.unit_cost_cents`, filled by a
+trigger from `product_variants.cost_cents`). Lines without a cost are flagged as an estimate.
+
 ## Payments
 
 Payment providers are modular (`src/lib/payments/index.ts`); checkout shows whatever is enabled.
 
 | Method | Status | Notes |
 | --- | --- | --- |
+| Pesepay (EcoCash, InnBucks, O'mari, Zimswitch, Visa, Mastercard) | ✅ built, off until keys are set | `PAYMENT_PESEPAY_ENABLED=true` + `PESEPAY_INTEGRATION_KEY` + `PESEPAY_ENCRYPTION_KEY` (Worker secrets). Hosted checkout; AES-256-CBC payloads; result callback at `/api/payments/pesepay/result` is checked against the integration key and then re-verified server-to-server with amount check. Only `SUCCESS` marks an order paid. Moving to another Pesepay account = swap the two secrets. |
 | Cash on delivery / collection | ✅ built | `PAYMENT_COD_ENABLED=true`. Order starts *unpaid*; staff mark it paid. |
 | Manual (mobile money / bank transfer) | ✅ built | `PAYMENT_MANUAL_ENABLED=true` + instructions. Staff verify before marking paid. |
 | **Paynow** (EcoCash, OneMoney, InnBucks, Zimswitch, Visa/Mastercard) | ✅ built, ⚠️ **untested against live Paynow** | Needs merchant approval + integration ID/key. |

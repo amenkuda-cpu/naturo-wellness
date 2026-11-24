@@ -1,12 +1,14 @@
 import "server-only";
+import { revalidateTag } from "next/cache";
 import { commerceConfig } from "@/config/commerce";
 import { categories } from "@/data/products";
 import { buildQuote, type Quote } from "@/lib/commerce/pricing";
 import type { CheckoutData } from "@/lib/commerce/validation";
 import { env } from "@/lib/env";
-import { getProvider, verifyPaynowPayment } from "@/lib/payments";
+import { getProvider, verifyOnlinePayment } from "@/lib/payments";
 import { getRepository } from "@/lib/repositories";
-import type { CartLine, DeliveryZone, FulfilmentMethod } from "@/lib/types";
+import { sendReceipt } from "./receipt";
+import { isOnlinePayment, type CartLine, type DeliveryZone, type FulfilmentMethod } from "@/lib/types";
 import { OrderingUnavailableError, StockConflictError, type OrderRecord } from "./types";
 import { generateAccessToken, generateOrderNumber, hashAccessToken } from "./token";
 
@@ -15,7 +17,7 @@ export async function quoteCart(input: {
   items: CartLine[];
   fulfilment?: { method: FulfilmentMethod; zoneId?: string };
   promoCode?: string | null;
-}): Promise<{ quote: Quote; zone: DeliveryZone | null; fulfilmentError: string | null; ageRestricted: boolean }> {
+}): Promise<{ quote: Quote; zone: DeliveryZone | null; fulfilmentError: string | null; ageRestricted: boolean; stockNearlyGone: boolean }> {
   const repo = getRepository();
   const [catalog, zones, promotion] = await Promise.all([
     repo.loadCatalog(),
@@ -52,8 +54,16 @@ export async function quoteCart(input: {
     const product = catalog.find((p) => p.id === line.productId);
     return product ? restrictedCategories.has(product.category) : false;
   });
-  return { quote, zone, fulfilmentError, ageRestricted };
+  // Tracked stock that this cart would bring to "low" or "sold out": the cached shop pages must refresh.
+  const stockNearlyGone = quote.lines.some((line) => {
+    const variant = catalog.find((p) => p.id === line.productId)?.variants.find((v) => v.id === line.variantId);
+    return variant?.stockQuantity != null && variant.stockQuantity - line.quantity <= LOW_STOCK_REFRESH_AT;
+  });
+  return { quote, zone, fulfilmentError, ageRestricted, stockNearlyGone };
 }
+
+/** Remaining tracked units at or below which an order refreshes the cached catalogue. */
+const LOW_STOCK_REFRESH_AT = 5;
 
 export type PlaceOrderResult =
   | {
@@ -74,7 +84,7 @@ export async function placeOrder(data: CheckoutData, customerId: string | null):
     return { ok: false, status: 422, error: "That payment method isn't available.", fieldErrors: { paymentMethod: "Choose an available payment method." } };
   }
 
-  const { quote, zone, fulfilmentError, ageRestricted } = await quoteCart({
+  const { quote, zone, fulfilmentError, ageRestricted, stockNearlyGone } = await quoteCart({
     items: data.items,
     fulfilment:
       data.fulfilment.method === "delivery"
@@ -137,6 +147,14 @@ ${data.notes}` : ""}` : data.notes,
     if (err instanceof OrderingUnavailableError) return { ok: false, status: 503, error: err.message };
     throw err;
   }
+  // The shop caches the catalogue for a day; show "low stock" / "sold out" without waiting for that.
+  if (stockNearlyGone) {
+    try {
+      revalidateTag("catalog", "max");
+    } catch {
+      // Outside a request scope (tests): nothing cached to refresh.
+    }
+  }
 
   const confirmationUrl = `/order/${order.id}?t=${encodeURIComponent(accessToken)}`;
   try {
@@ -169,18 +187,34 @@ ${data.notes}` : ""}` : data.notes,
   };
 }
 
-/** Re-checks a Paynow order's status with Paynow and records any change. */
+/** Re-checks an online order's status with its provider and records any change. */
 export async function refreshPaymentStatus(order: OrderRecord): Promise<OrderRecord> {
-  if (order.paymentMethod !== "paynow" || order.paymentStatus === "paid") return order;
-  const result = await verifyPaynowPayment(order);
+  if (!isOnlinePayment(order.paymentMethod) || order.paymentStatus === "paid") return order;
+  const result = await verifyOnlinePayment(order);
   if (!result || result.status === order.paymentStatus) return order;
-  return getRepository().updateOrder(
+  const updated = await getRepository().updateOrder(
     order.id,
     {
       paymentStatus: result.status,
       paymentReference: result.reference ?? order.paymentReference,
       ...(result.status === "paid" && order.status === "pending" ? { status: "confirmed" as const } : {}),
     },
-    { note: `Paynow reported: ${result.status}`, actor: "paynow" },
+    { note: `${order.paymentMethod === "pesepay" ? "Pesepay" : "Paynow"} reported: ${result.status}`, actor: order.paymentMethod },
   );
+  if (updated.becamePaid) await emailReceipt(updated);
+  return updated;
+}
+
+/** Sends the receipt and notes the outcome on the order timeline. Never throws. */
+export async function emailReceipt(order: OrderRecord, sentBy = "system") {
+  const sent = await sendReceipt(order, sentBy);
+  const note = sent.ok
+    ? `Receipt emailed to ${order.customer.email}`
+    : "skipped" in sent
+      ? "No receipt emailed: the order has no email address"
+      : `Receipt email failed: ${sent.error}`.slice(0, 300);
+  await getRepository()
+    .updateOrder(order.id, {}, { note, actor: sentBy })
+    .catch(() => undefined);
+  return sent;
 }

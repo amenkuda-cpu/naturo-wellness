@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { Suspense } from "react";
+import { EnquiryForm } from "@/components/checkout/enquiry-form";
 import { OrderStatusView } from "@/components/checkout/order-status";
 import { env } from "@/lib/env";
 import { refreshPaymentStatus } from "@/lib/orders/service";
@@ -41,6 +42,13 @@ async function OrderContent({ params, searchParams }: Props) {
           manualInstructions={order.paymentMethod === "manual" ? env.payments.manualInstructions : null}
         />
       </div>
+      <section aria-labelledby="ask-title" className="mt-12 max-w-2xl rounded-[2rem] border border-forest/10 p-6 sm:p-8">
+        <h2 id="ask-title" className="font-display text-xl font-extrabold uppercase text-forest">Questions about this order?</h2>
+        <p className="mt-2 text-sm text-ink/70">Send us a message and the Naturo team will get back to you on {order.customer.phone}.</p>
+        <div className="mt-5">
+          <EnquiryForm order={{ id: order.id, token: t!, name: order.customer.fullName, phone: order.customer.phone, email: order.customer.email }} />
+        </div>
+      </section>
       <Link href="/shop" className="mt-12 inline-block text-sm font-semibold uppercase tracking-[0.16em] text-forest underline underline-offset-4">
         Continue shopping
       </Link>

@@ -257,7 +257,7 @@ const seeds: Seed[] = [
     motifs: ["maize-kernels", "sorghum-head", "leaf"],
     theme: { accent: "#E8B520", deep: "#5B4515", tint: "#F8EDC9" },
     mood: "Familiar. Creamy. Home.",
-    related: ["maheu-buttermilk", "muvhee", "ginger-shot"],
+    related: ["maheu-buttermilk", "ginger-shot", "hibiscus-shot"],
   },
   {
     id: "maheu-buttermilk",
@@ -277,26 +277,7 @@ const seeds: Seed[] = [
     motifs: ["maize-kernels", "droplet", "leaf"],
     theme: { accent: "#2F8FD8", deep: "#173F5B", tint: "#E3EFF8" },
     mood: "Smooth. Tangy. Refreshing.",
-    related: ["maheu-traditional", "muvhee", "pineapple-shot"],
-  },
-  {
-    id: "muvhee",
-    name: "Muvhee",
-    file: "muvhee",
-    category: "traditional-favourites",
-    packaging: "tall",
-    kind: "bottle",
-    price: null,
-    shortDescription: "A traditional drink presented in a modern, convenient bottled format.",
-    fullDescription: [
-      "Muvhee brings a traditional drink into a modern, convenient bottle, with all the character you remember and none of the fuss.",
-      "Proudly part of our heritage range.",
-    ],
-    tags: ["traditional", "heritage"],
-    motifs: ["sorghum-head", "maize-kernels", "leaf"],
-    theme: { accent: "#A86B2C", deep: "#4A2D10", tint: "#F0DFC6" },
-    mood: "Heritage. Character. Pride.",
-    related: ["maheu-traditional", "maheu-buttermilk", "muvheyi-tea"],
+    related: ["maheu-traditional", "pineapple-shot", "glow-shot"],
   },
 
   /* ───────────── Herbal teas (20 bags · 40 g) ───────────── */
@@ -426,7 +407,7 @@ const seeds: Seed[] = [
     motifs: ["tea-leaf", "leaf", "droplet"],
     theme: { accent: "#3E8A3A", deep: "#1D4A1F", tint: "#E1EDD9" },
     mood: "Heritage. Leafy. Calm.",
-    related: ["green-focus-tea", "muvhee", "carrot-tea"],
+    related: ["green-focus-tea", "hibiscus-tea", "carrot-tea"],
   },
   {
     id: "carrot-tea",

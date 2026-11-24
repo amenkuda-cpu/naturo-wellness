@@ -7,7 +7,8 @@ const display = Bricolage_Grotesque({
   subsets: ["latin"],
   variable: "--font-bricolage",
   display: "swap",
-  weight: ["500", "700", "800"],
+  // Variable font with the width axis: the home hero headline uses the condensed cut (wdth 75).
+  axes: ["wdth"],
 });
 const serif = Instrument_Serif({
   subsets: ["latin"],

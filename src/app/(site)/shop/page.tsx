@@ -9,7 +9,7 @@ import type { Product } from "@/lib/types";
 export const metadata: Metadata = {
   title: "Shop natural wellness drinks",
   description:
-    "Shop Naturo wellness shots, traditional Zimbabwean favourites like Maheu and Muvhee, and herbal teas and powders, proudly made in Zimbabwe.",
+    "Shop Naturo wellness shots, traditional Zimbabwean favourites like Maheu, and herbal teas and powders, proudly made in Zimbabwe.",
   alternates: { canonical: "/shop" },
 };
 

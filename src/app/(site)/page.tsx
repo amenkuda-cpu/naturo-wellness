@@ -15,7 +15,7 @@ export default async function HomePage() {
   // hydrate the page in small chunks and keep the main thread responsive.
   return (
     <>
-      <Hero />
+      <Hero catalog={catalog} samplePricing={settings.samplePricing} />
       <Suspense>
         <ProductShowcase catalog={catalog} samplePricing={settings.samplePricing} />
       </Suspense>

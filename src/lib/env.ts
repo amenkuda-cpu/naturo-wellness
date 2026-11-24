@@ -53,6 +53,43 @@ export const env = {
         flag("PAYMENT_PAYNOW_ENABLED") &&
         Boolean(process.env.PAYNOW_INTEGRATION_ID && process.env.PAYNOW_INTEGRATION_KEY),
     },
+    /** Pesepay (https://pesepay.com): hosted checkout for EcoCash, InnBucks, O'mari, Zimswitch, Visa & Mastercard. */
+    pesepay: {
+      // Trimmed: secrets pasted through a terminal can pick up a trailing newline.
+      integrationKey: (process.env.PESEPAY_INTEGRATION_KEY || "").trim(),
+      encryptionKey: (process.env.PESEPAY_ENCRYPTION_KEY || "").trim(),
+      sandbox: flag("PESEPAY_SANDBOX"),
+      enabled:
+        flag("PAYMENT_PESEPAY_ENABLED") &&
+        Boolean((process.env.PESEPAY_INTEGRATION_KEY || "").trim() && (process.env.PESEPAY_ENCRYPTION_KEY || "").trim().length === 32),
+    },
+  },
+
+  /** Where deliveries start from (the Naturo kitchen / dispatch point). */
+  dispatch: {
+    lat: Number(process.env.NATURO_DISPATCH_LAT || -17.8292),
+    lng: Number(process.env.NATURO_DISPATCH_LNG || 31.0522),
+    label: process.env.NATURO_DISPATCH_LABEL || "Naturo kitchen, Harare",
+  },
+
+  /**
+   * Outgoing email: admin sign-in codes, payment receipts, replies to customers.
+   * Zoho ZeptoMail HTTP API (preferred) or Resend; both work from Cloudflare Workers.
+   * Each kind of email has its own sender on getnaturo.com.
+   */
+  email: {
+    zeptoToken: (process.env.ZEPTOMAIL_TOKEN || "").trim(),
+    /** ZeptoMail API host for the account's data centre (.com, .eu, .in, .com.au …). */
+    zeptoUrl: (process.env.ZEPTOMAIL_API_URL || "https://api.zeptomail.com").replace(/\/+$/, ""),
+    resendKey: (process.env.RESEND_API_KEY || "").trim(),
+    from: {
+      noreply: process.env.EMAIL_FROM_NOREPLY || "Naturo Wellness <noreply@getnaturo.com>",
+      billing: process.env.EMAIL_FROM_BILLING || "Naturo Wellness Billing <billing@getnaturo.com>",
+      support: process.env.EMAIL_FROM_SUPPORT || process.env.EMAIL_FROM || "Naturo Wellness <support@getnaturo.com>",
+    },
+    supportAddress: process.env.EMAIL_SUPPORT_ADDRESS || "support@getnaturo.com",
+    replyTo: process.env.EMAIL_REPLY_TO || "",
+    configured: Boolean((process.env.ZEPTOMAIL_TOKEN || "").trim() || (process.env.RESEND_API_KEY || "").trim()),
   },
 } as const;
 

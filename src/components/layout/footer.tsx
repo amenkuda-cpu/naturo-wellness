@@ -84,6 +84,13 @@ export function Footer() {
                 </a>
               </li>
             ) : null}
+            {contact.messenger ? (
+              <li>
+                <a href={contact.messenger} className="link-underline" rel="noopener" target="_blank">
+                  Message us on Facebook
+                </a>
+              </li>
+            ) : null}
             {contact.email ? (
               <li>
                 <a href={`mailto:${contact.email}`} className="link-underline">{contact.email}</a>
@@ -92,6 +99,20 @@ export function Footer() {
             {!contact.phone && !contact.email && !contact.whatsapp && (
               <li className="text-warm/60">Contact details coming soon.</li>
             )}
+            {contact.address ? (
+              <li>
+                <a href={contact.mapUrl} className="link-underline" target="_blank" rel="noopener">
+                  Realtime Building, cnr Central Ave &amp; Third St, Harare
+                </a>
+              </li>
+            ) : null}
+            {contact.hours ? (
+              <li className="text-warm/60">
+                Mon–Fri 08:00–17:00
+                <br />
+                Sat 09:00–13:00 · Sun closed
+              </li>
+            ) : null}
             <li className="text-warm/60">Made in {siteConfig.country}</li>
           </ul>
           {socials.length > 0 && (
