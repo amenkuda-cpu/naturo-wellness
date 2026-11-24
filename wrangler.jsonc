@@ -66,6 +66,7 @@
     "NATURO_DISPATCH_LABEL": "Naturo kitchen · Realtime Building, cnr Central Ave & Third St, Harare",
     "NEXT_PUBLIC_TAX_RATE_BPS": "0",
     "NEXT_PUBLIC_COLLECTION_ENABLED": "true",
-    "NEXT_PUBLIC_ANALYTICS_PROVIDER": "none"
+    "NEXT_PUBLIC_ANALYTICS_PROVIDER": "none",
+    "NEXT_PUBLIC_META_PIXEL_ID": "2888065011576234"
   }
 }
