@@ -1,9 +1,10 @@
 "use client";
 
-import { Check, Clock, Loader2, RefreshCw, XCircle } from "lucide-react";
+import { Check, Clock, Loader2, MessageCircle, RefreshCw, XCircle } from "lucide-react";
 import { useCallback, useEffect, useState } from "react";
 import { LiveMap } from "@/components/tracking/live-map";
 import { metaPixel } from "@/config/meta";
+import { siteConfig } from "@/config/site";
 import { track } from "@/lib/analytics";
 import { cn } from "@/lib/cn";
 import { formatMoney } from "@/lib/commerce/pricing";
@@ -27,6 +28,22 @@ const STEPS: { id: OrderStatus; label: string }[] = [
   { id: "out_for_delivery", label: "On its way" },
   { id: "completed", label: "Completed" },
 ];
+
+const naturoWhatsApp = (siteConfig.contact.whatsapp ?? "").replace(/\D/g, "");
+
+/** Pre-written WhatsApp message: everything the team needs to confirm the order. */
+function whatsAppOrderText(order: PublicOrder, money: (v: number) => string) {
+  const where =
+    order.fulfilment.method === "delivery" && order.fulfilment.address
+      ? `Delivery to ${[order.fulfilment.address.line1, order.fulfilment.address.suburb, order.fulfilment.address.city].filter(Boolean).join(", ")}`
+      : "Collection";
+  return [
+    `Hi Naturo! I've just placed order ${order.orderNumber} (${money(order.total)}).`,
+    ...order.lines.map((l) => `- ${l.quantity} x ${l.name}`),
+    where,
+    `Name: ${order.customer.fullName}`,
+  ].join("\n");
+}
 
 function stepIndex(status: OrderStatus) {
   if (status === "ready_for_collection") return 3;
@@ -139,6 +156,23 @@ export function OrderStatusView({
           </div>
         )}
 
+        {!cancelled && naturoWhatsApp && (
+          <div className="rounded-2xl border border-[#25D366]/40 bg-[#25D366]/10 p-5">
+            <p className="font-semibold text-forest">Get your order confirmed faster</p>
+            <p className="mt-1 text-sm text-ink/75">
+              Send your order to us on WhatsApp with one tap. The message is already written for you.
+            </p>
+            <a
+              href={`https://wa.me/${naturoWhatsApp}?text=${encodeURIComponent(whatsAppOrderText(order, money))}`}
+              target="_blank"
+              rel="noopener"
+              className="mt-3 inline-flex items-center gap-2 rounded-full bg-[#25D366] px-5 py-3 text-sm font-semibold text-[#0b3d20] shadow-sm transition hover:brightness-105"
+            >
+              <MessageCircle className="h-4 w-4" aria-hidden /> Send my order to Naturo on WhatsApp
+            </a>
+          </div>
+        )}
+
         <section aria-labelledby="progress-title">
           <h2 id="progress-title" className="eyebrow text-ink/70">Order progress</h2>
           {cancelled ? (
@@ -193,7 +227,7 @@ export function OrderStatusView({
                 {order.fulfilment.zoneName && <span className="block text-sm text-ink/70">{order.fulfilment.zoneName}</span>}
               </p>
             ) : (
-              <p className="mt-2 text-ink/80">We&apos;ll confirm collection details with you.</p>
+              <p className="mt-2 text-ink/80">Collect at {siteConfig.contact.address}. Mon–Fri 08:00–17:00, Sat 09:00–13:00. We&apos;ll WhatsApp you when it&apos;s ready.</p>
             )}
           </div>
         </section>
