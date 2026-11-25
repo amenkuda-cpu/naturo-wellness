@@ -1,5 +1,6 @@
 import { Clock, Mail, MapPin, MessageCircle, MessagesSquare, Truck } from "lucide-react";
 import type { Metadata } from "next";
+import { pageMeta } from "@/lib/seo/meta";
 import { EnquiryForm } from "@/components/checkout/enquiry-form";
 import { OpenNowBadge, OpeningHoursTable } from "@/components/contact/opening-hours";
 import { PageHero } from "@/components/layout/page-hero";
@@ -8,13 +9,12 @@ import { brand } from "@/config/brand";
 import { siteConfig } from "@/config/site";
 import { breadcrumbLd } from "@/lib/seo/schema";
 
-export const metadata: Metadata = {
-  title: { absolute: "Contact Naturo Wellness | WhatsApp Orders in Zimbabwe" },
+export const metadata: Metadata = pageMeta({
+  title: "Contact Naturo Wellness | WhatsApp Orders in Zimbabwe",
   description:
     "Contact Naturo Wellness in Harare. Order wellness shots or ask a question on WhatsApp (+263 77 297 2693). Delivery across Zimbabwe, bulk orders welcome.",
-  alternates: { canonical: "/contact" },
-  openGraph: { url: "/contact", title: "Contact Naturo Wellness | WhatsApp Orders in Zimbabwe" },
-};
+  path: "/contact",
+});
 
 export default function ContactPage() {
   const c = siteConfig.contact;

@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import { pageMeta } from "@/lib/seo/meta";
 import Image from "next/image";
 import Link from "next/link";
 import { PageHero } from "@/components/layout/page-hero";
@@ -6,13 +7,12 @@ import { JsonLd } from "@/components/seo/json-ld";
 import { articles } from "@/data/journal";
 import { breadcrumbLd } from "@/lib/seo/schema";
 
-export const metadata: Metadata = {
-  title: { absolute: "Naturo Wellness Journal | Wellness Tips from Zimbabwe" },
+export const metadata: Metadata = pageMeta({
+  title: "Naturo Wellness Journal | Wellness Tips from Zimbabwe",
   description:
     "The Naturo Wellness Journal: honest, practical reads on wellness shots, daily routines and fresh, natural drinks, written in Harare, Zimbabwe.",
-  alternates: { canonical: "/journal" },
-  openGraph: { url: "/journal", title: "Naturo Wellness Journal | Wellness Tips from Zimbabwe" },
-};
+  path: "/journal",
+});
 
 export default function JournalPage() {
   return (

@@ -12,6 +12,7 @@ import { categoryById, products as localProducts } from "@/data/products";
 import { getCatalog, getProductBySlug, getStoreSettings } from "@/lib/commerce/catalog";
 import { formatMoney } from "@/lib/commerce/pricing";
 import { productCopy, SHOT_SLUGS } from "@/data/product-copy";
+import { pageMeta } from "@/lib/seo/meta";
 import { breadcrumbLd, faqLd, productLd } from "@/lib/seo/schema";
 import type { Product } from "@/lib/types";
 
@@ -29,21 +30,12 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const title = copy?.seoTitle ?? `Naturo Wellness ${product.name} | Made in Zimbabwe`;
   const description = copy?.seoDescription ?? `${product.shortDescription} By Naturo Wellness, made in Zimbabwe.`;
   const image = product.images[0];
-  return {
-    title: { absolute: title },
+  return pageMeta({
+    title,
     description,
-    alternates: { canonical: `/shop/${product.slug}` },
-    openGraph: {
-      type: "website",
-      url: `/shop/${product.slug}`,
-      title,
-      description,
-      images: image
-        ? [{ url: image.src, width: image.width, height: image.height, alt: `Naturo Wellness ${product.name}` }, { url: brand.shareImage.src, width: 1200, height: 630, alt: brand.shareImage.alt }]
-        : [{ url: brand.shareImage.src, width: 1200, height: 630, alt: brand.shareImage.alt }],
-    },
-    twitter: { card: "summary_large_image", title, description, images: [brand.shareImage.src] },
-  };
+    path: `/shop/${product.slug}`,
+    image: image ? { url: image.src, width: image.width, height: image.height, alt: `Naturo Wellness ${product.name}` } : undefined,
+  });
 }
 
 /**

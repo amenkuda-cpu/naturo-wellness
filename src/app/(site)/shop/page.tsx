@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import { pageMeta } from "@/lib/seo/meta";
 import { Suspense } from "react";
 import { PageHero } from "@/components/layout/page-hero";
 import { ProductCard } from "@/components/product/product-card";
@@ -6,13 +7,12 @@ import { ShopBrowser } from "@/components/shop/shop-browser";
 import { getCatalog, getStoreSettings } from "@/lib/commerce/catalog";
 import type { Product } from "@/lib/types";
 
-export const metadata: Metadata = {
-  title: { absolute: "Naturo Wellness Shop | Buy Wellness Shots in Zimbabwe" },
+export const metadata: Metadata = pageMeta({
+  title: `Naturo Wellness Shop | Buy Wellness Shots in Zimbabwe`,
   description:
-    "Shop Naturo Wellness shots made fresh in Harare: Ginger, Men's, Hibiscus, Glow and Pineapple, plus herbal teas, Maheu and cans. Delivery across Zimbabwe.",
-  alternates: { canonical: "/shop" },
-  openGraph: { url: "/shop", title: "Naturo Wellness Shop | Buy Wellness Shots in Zimbabwe" },
-};
+    `Shop Naturo Wellness shots made fresh in Harare: Ginger, Men's, Hibiscus, Glow and Pineapple, plus teas, Maheu and cans. Delivery across Zimbabwe.`,
+  path: "/shop",
+});
 
 /**
  * Prerendered stand-in with the same layout as the interactive browser, so

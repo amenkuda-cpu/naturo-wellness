@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import { pageMeta } from "@/lib/seo/meta";
 import { ClosingCta } from "@/components/home/closing-cta";
 import { Story } from "@/components/home/story";
 import { PageHero } from "@/components/layout/page-hero";
@@ -8,13 +9,12 @@ import { brand } from "@/config/brand";
 import { siteConfig } from "@/config/site";
 import { breadcrumbLd, ORG_ID } from "@/lib/seo/schema";
 
-export const metadata: Metadata = {
-  title: { absolute: "About Naturo Wellness | Wellness Brand in Zimbabwe" },
+export const metadata: Metadata = pageMeta({
+  title: "About Naturo Wellness | Wellness Brand in Zimbabwe",
   description:
-    "Meet Naturo Wellness, a Harare wellness brand founded by Sharon Ndoro Nyazema, making natural wellness shots fresh in Zimbabwe. Our story, mission and vision.",
-  alternates: { canonical: "/our-story" },
-  openGraph: { url: "/our-story", title: "About Naturo Wellness | Wellness Brand in Zimbabwe" },
-};
+    "Naturo Wellness is a Harare wellness brand founded by Sharon Ndoro Nyazema, making natural wellness shots fresh in Zimbabwe. Our story and vision.",
+  path: "/our-story",
+});
 
 const values = [
   { k: "Natural", v: "Real ingredients, no unnecessary additives, and flavours you can recognise." },

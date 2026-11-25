@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import { pageMeta } from "@/lib/seo/meta";
 import { Suspense } from "react";
 import { ClosingCta } from "@/components/home/closing-cta";
 import { CollectionFeature } from "@/components/home/collection-feature";
@@ -11,12 +12,12 @@ import { Story } from "@/components/home/story";
 import { Transparency } from "@/components/home/transparency";
 import { getCatalog, getStoreSettings } from "@/lib/commerce/catalog";
 
-export const metadata: Metadata = {
-  title: { absolute: "Naturo Wellness | Natural Wellness Shots in Zimbabwe" },
+export const metadata: Metadata = pageMeta({
+  title: `Naturo Wellness | Natural Wellness Shots in Zimbabwe`,
   description:
-    "Naturo Wellness makes natural wellness shots, made fresh in Harare, Zimbabwe: Ginger, Men's, Hibiscus, Glow and Pineapple. Order online or on WhatsApp.",
-  alternates: { canonical: "/" },
-};
+    `Natural wellness shots made fresh in Harare by Naturo Wellness: Ginger, Men's, Hibiscus, Glow and Pineapple. Order online or on WhatsApp.`,
+  path: "/",
+});
 
 export default async function HomePage() {
   const [catalog, settings] = await Promise.all([getCatalog(), getStoreSettings()]);

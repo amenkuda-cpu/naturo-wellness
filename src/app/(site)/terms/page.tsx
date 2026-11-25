@@ -1,7 +1,13 @@
 import type { Metadata } from "next";
+import { pageMeta } from "@/lib/seo/meta";
 import { ProsePage } from "@/components/layout/prose-page";
 
-export const metadata: Metadata = { title: { absolute: "Terms & Conditions | Naturo Wellness Zimbabwe" }, description: "The terms that apply when you order Naturo Wellness shots, teas and drinks online or on WhatsApp in Zimbabwe.", alternates: { canonical: "/terms" } };
+export const metadata: Metadata = pageMeta({
+  title: "Terms & Conditions | Naturo Wellness Zimbabwe",
+  description:
+    "The terms that apply when you order Naturo Wellness shots, teas and drinks online or on WhatsApp in Zimbabwe.",
+  path: "/terms",
+});
 
 export default function TermsPage() {
   return (

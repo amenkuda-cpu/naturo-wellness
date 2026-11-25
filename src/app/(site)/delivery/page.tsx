@@ -1,13 +1,15 @@
 import type { Metadata } from "next";
+import { pageMeta } from "@/lib/seo/meta";
 import { ProsePage } from "@/components/layout/prose-page";
 import { getStoreSettings } from "@/lib/commerce/catalog";
 import { formatMoney } from "@/lib/commerce/pricing";
 
-export const metadata: Metadata = {
-  title: { absolute: "Naturo Wellness Delivery | Harare & Across Zimbabwe" },
-  description: "How Naturo Wellness delivery and collection work: delivery areas and fees in Harare and across Zimbabwe, and how we keep your shots fresh.",
-  alternates: { canonical: "/delivery" },
-};
+export const metadata: Metadata = pageMeta({
+  title: "Naturo Wellness Delivery | Harare & Across Zimbabwe",
+  description:
+    "Naturo Wellness delivery and collection: free within 1 km of our Harare shop, delivery areas and fees across Zimbabwe, and free collection.",
+  path: "/delivery",
+});
 
 export default async function DeliveryPage() {
   const settings = await getStoreSettings();

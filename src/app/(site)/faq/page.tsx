@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import { pageMeta } from "@/lib/seo/meta";
 import Link from "next/link";
 import { PageHero } from "@/components/layout/page-hero";
 import { JsonLd } from "@/components/seo/json-ld";
@@ -8,13 +9,12 @@ import { getStoreSettings } from "@/lib/commerce/catalog";
 import { formatMoney } from "@/lib/commerce/pricing";
 import { breadcrumbLd, faqLd } from "@/lib/seo/schema";
 
-export const metadata: Metadata = {
-  title: { absolute: "Naturo Wellness FAQ | Delivery, Freshness & Orders" },
+export const metadata: Metadata = pageMeta({
+  title: "Naturo Wellness FAQ | Delivery, Freshness & Orders",
   description:
-    "Answers about Naturo Wellness shots: delivery areas in Zimbabwe, freshness, storage, how to order online or on WhatsApp, payment and bulk orders.",
-  alternates: { canonical: "/faq" },
-  openGraph: { url: "/faq", title: "Naturo Wellness FAQ | Delivery, Freshness & Orders" },
-};
+    "Answers about Naturo Wellness shots: delivery areas in Zimbabwe, freshness, storage, ordering online or on WhatsApp, payment and bulk orders.",
+  path: "/faq",
+});
 
 const list = (items: string[]) =>
   items.length <= 1 ? items.join("") : `${items.slice(0, -1).join(", ")} and ${items[items.length - 1]}`;

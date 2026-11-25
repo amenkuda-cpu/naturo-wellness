@@ -1,16 +1,17 @@
 import type { Metadata } from "next";
+import { pageMeta } from "@/lib/seo/meta";
 import { Transparency } from "@/components/home/transparency";
 import { PageHero } from "@/components/layout/page-hero";
 import { Reveal } from "@/components/motion/reveal";
 import { MotifImage } from "@/components/product/product-image";
 import type { Motif } from "@/lib/types";
 
-export const metadata: Metadata = {
-  title: { absolute: "Naturo Wellness Ingredients | Honest Labels, Zimbabwe" },
+export const metadata: Metadata = pageMeta({
+  title: "Naturo Wellness Ingredients | Honest Labels, Zimbabwe",
   description:
     "The natural ingredients behind Naturo Wellness shots and teas, like ginger, hibiscus and pineapple, and our promise of honest, clearly printed labels.",
-  alternates: { canonical: "/ingredients" },
-};
+  path: "/ingredients",
+});
 
 /**
  * A celebration of flavours that inspire the range: descriptive only.

@@ -3,6 +3,7 @@ import Image from "next/image";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { PageHero } from "@/components/layout/page-hero";
+import { pageMeta } from "@/lib/seo/meta";
 import { JsonLd } from "@/components/seo/json-ld";
 import { articleBySlug, articles } from "@/data/journal";
 import { productBySlug } from "@/data/products";
@@ -18,12 +19,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const { slug } = await params;
   const a = articleBySlug(slug);
   if (!a) return { title: "Article not found", robots: { index: false } };
-  return {
-    title: { absolute: a.seoTitle },
-    description: a.description,
-    alternates: { canonical: `/journal/${a.slug}` },
-    openGraph: { type: "article", url: `/journal/${a.slug}`, title: a.seoTitle, description: a.description, publishedTime: a.datePublished },
-  };
+  return pageMeta({ title: a.seoTitle, description: a.description, path: `/journal/${a.slug}`, type: "article" });
 }
 
 export default async function ArticlePage({ params }: Props) {
