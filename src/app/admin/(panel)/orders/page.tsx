@@ -1,6 +1,7 @@
 import { Truck, Inbox, Search, Store } from "lucide-react";
 import Link from "next/link";
 import { AutoRefresh } from "@/components/admin/live";
+import { DeleteOrderButton } from "@/components/admin/delete-order-button";
 import {
   AdminTitle,
   Card,
@@ -40,6 +41,8 @@ export default async function AdminOrders({ searchParams }: { searchParams: Prom
   const label = (f: string) => (f === "all" ? "All" : f === "open" ? "Open" : ORDER_STATUS_META[f as OrderStatus].label);
   const href = (f: string) => `/admin/orders?status=${f}${query ? `&q=${encodeURIComponent(query)}` : ""}`;
   const now = requestNow();
+  const canDelete = (o: (typeof all)[number]) => ctx.role === "admin" && o.paymentStatus !== "paid";
+  const goodsLeft = (o: (typeof all)[number]) => o.status === "completed" || o.status === "out_for_delivery";
 
   return (
     <>
@@ -91,6 +94,11 @@ export default async function AdminOrders({ searchParams }: { searchParams: Prom
                   </div>
                   <div className="mt-3 flex flex-wrap gap-1.5"><StatusPill status={o.status} /><PaymentPill status={o.paymentStatus} /></div>
                 </Link>
+                {canDelete(o) && (
+                  <div className="mt-1 flex justify-end">
+                    <DeleteOrderButton orderId={o.id} orderNumber={o.orderNumber} goodsLeft={goodsLeft(o)} compact />
+                  </div>
+                )}
               </li>
             ))}
           </ul>
@@ -106,6 +114,7 @@ export default async function AdminOrders({ searchParams }: { searchParams: Prom
                   <th className="px-3 py-4 font-semibold">Status</th>
                   <th className="px-3 py-4 font-semibold">Payment</th>
                   <th className="px-5 py-4 text-right font-semibold">Total</th>
+                  {ctx.role === "admin" && <th className="w-14 py-4 pr-4"><span className="sr-only">Delete</span></th>}
                 </tr>
               </thead>
               <tbody>
@@ -125,6 +134,11 @@ export default async function AdminOrders({ searchParams }: { searchParams: Prom
                     <td className="px-3 py-3.5"><StatusPill status={o.status} /></td>
                     <td className="px-3 py-3.5"><PaymentPill status={o.paymentStatus} /><span className="mt-1 block text-xs text-[var(--a-muted)]">{PAYMENT_METHOD_LABEL[o.paymentMethod]}</span></td>
                     <td className="px-5 py-3.5 text-right font-bold tabular-nums text-[var(--a-ink)]">{formatMoney(o.total, o.currency)}</td>
+                    {ctx.role === "admin" && (
+                      <td className="py-3.5 pr-4 text-right">
+                        {canDelete(o) ? <DeleteOrderButton orderId={o.id} orderNumber={o.orderNumber} goodsLeft={goodsLeft(o)} /> : <span className="sr-only">Paid orders can&apos;t be deleted</span>}
+                      </td>
+                    )}
                   </tr>
                 ))}
               </tbody>
