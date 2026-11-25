@@ -43,6 +43,8 @@ const customerSchema = z.object({
     .union([z.literal(""), z.email("Enter a valid email address.").max(200)])
     .optional()
     .transform((v) => (v ? v.toLowerCase() : null)),
+  /** The phone number is on WhatsApp (default yes). */
+  whatsapp: z.boolean().optional().default(true),
 });
 
 const addressSchema = z.object({

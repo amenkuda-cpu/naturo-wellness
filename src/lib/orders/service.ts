@@ -1,5 +1,6 @@
 import "server-only";
 import { revalidateTag } from "next/cache";
+import { after } from "next/server";
 import { commerceConfig } from "@/config/commerce";
 import { categories } from "@/data/products";
 import { buildQuote, type Quote } from "@/lib/commerce/pricing";
@@ -8,6 +9,7 @@ import { env } from "@/lib/env";
 import { getProvider, verifyOnlinePayment } from "@/lib/payments";
 import { getRepository } from "@/lib/repositories";
 import { sendReceipt } from "./receipt";
+import { orderAlertConfigured, sendOrderAlert } from "@/lib/notify/order-alert";
 import { isOnlinePayment, type CartLine, type DeliveryZone, type FulfilmentMethod } from "@/lib/types";
 import { OrderingUnavailableError, StockConflictError, type OrderRecord } from "./types";
 import { generateAccessToken, generateOrderNumber, hashAccessToken } from "./token";
@@ -138,8 +140,13 @@ export async function placeOrder(data: CheckoutData, customerId: string | null):
       tax: quote.tax,
       total: quote.total,
       promoCode: quote.promotionCode,
-      notes: ageRestricted ? `[18+ confirmed by customer at checkout]${data.notes ? `
-${data.notes}` : ""}` : data.notes,
+      notes: [
+        ageRestricted ? "[18+ confirmed by customer at checkout]" : "",
+        data.customer.whatsapp === false ? "[Not on WhatsApp]" : "",
+        data.notes,
+      ]
+        .filter(Boolean)
+        .join("\n"),
       accessTokenHash: hashAccessToken(accessToken),
     });
   } catch (err) {
@@ -153,6 +160,20 @@ ${data.notes}` : ""}` : data.notes,
       revalidateTag("catalog", "max");
     } catch {
       // Outside a request scope (tests): nothing cached to refresh.
+    }
+  }
+
+  // Tell the team straight away, after the customer's response has gone out.
+  if (orderAlertConfigured() || process.env.ORDER_ALERT_EMAIL) {
+    const placed = order;
+    const alert = async () => {
+      const r = await sendOrderAlert(placed);
+      await repo.updateOrder(placed.id, {}, { note: r.note, actor: "system" }).catch(() => undefined);
+    };
+    try {
+      after(alert);
+    } catch {
+      void alert();
     }
   }
 

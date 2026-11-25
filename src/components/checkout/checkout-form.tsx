@@ -70,6 +70,23 @@ function Field({
   );
 }
 
+/** Returning customers: details kept only in this browser (never sent anywhere else). */
+const SAVED_DETAILS_KEY = "naturo.checkout.details.v1";
+const SAVED_FIELDS = ["fullName", "phone", "email", "line1", "suburb", "city"] as const;
+
+function rememberDetails(fd: FormData) {
+  try {
+    if (fd.get("rememberMe") !== "on") {
+      localStorage.removeItem(SAVED_DETAILS_KEY);
+      return;
+    }
+    const keep = Object.fromEntries(SAVED_FIELDS.map((k) => [k, String(fd.get(k) ?? "").trim()]).filter(([, v]) => v));
+    localStorage.setItem(SAVED_DETAILS_KEY, JSON.stringify(keep));
+  } catch {
+    // Storage unavailable (private mode): nothing to remember.
+  }
+}
+
 export function CheckoutForm() {
   const { lines, hydrated } = useCart();
   const { settings, byId } = useStore();
@@ -107,6 +124,24 @@ export function CheckoutForm() {
     // Fires once, when the cart has loaded.
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [hydrated, lines.length]);
+
+  // Fill in saved details (empty fields only), including the address once delivery is chosen.
+  useEffect(() => {
+    if (!hydrated) return;
+    let saved: Record<string, unknown> = {};
+    try {
+      saved = JSON.parse(localStorage.getItem(SAVED_DETAILS_KEY) ?? "{}");
+    } catch {
+      return;
+    }
+    const form = formRef.current;
+    if (!form) return;
+    for (const k of SAVED_FIELDS) {
+      const el = form.elements.namedItem(k);
+      const v = saved[k];
+      if (el instanceof HTMLInputElement && !el.value && typeof v === "string") el.value = v;
+    }
+  }, [hydrated, method]);
 
   useEffect(() => {
     if (promo && quote.promotionCode) track("coupon_applied", { code: quote.promotionCode });
@@ -158,6 +193,7 @@ export function CheckoutForm() {
         fullName: String(fd.get("fullName") ?? ""),
         phone: String(fd.get("phone") ?? ""),
         email: String(fd.get("email") ?? ""),
+        whatsapp: fd.get("onWhatsapp") === "on",
       },
       fulfilment:
         method === "delivery"
@@ -207,6 +243,7 @@ export function CheckoutForm() {
         setSubmitting(false);
         return;
       }
+      rememberDetails(fd);
       cart.clear();
       track("purchase", { order_number: data.orderNumber, payment_method: payment, value: quote.total });
       if (data.next.kind === "redirect") window.location.assign(data.next.url);
@@ -256,7 +293,7 @@ export function CheckoutForm() {
             <input id="fullName" name="fullName" autoComplete="name" required className="field" {...aria("customer.fullName", "fullName")} />
           </Field>
           <div className="grid gap-5 sm:grid-cols-2">
-            <Field id="phone" label="Mobile number" error={err("customer.phone")} hint="We'll use this to confirm your order.">
+            <Field id="phone" label="WhatsApp number" error={err("customer.phone")} hint="We'll confirm your order on WhatsApp.">
               <input
                 id="phone"
                 name="phone"
@@ -268,6 +305,10 @@ export function CheckoutForm() {
                 className="field"
                 {...aria("customer.phone", "phone")}
               />
+              <label className="mt-2 flex items-center gap-2 text-xs text-ink/75">
+                <input type="checkbox" name="onWhatsapp" defaultChecked className="h-4 w-4 accent-forest" />
+                This number is on WhatsApp
+              </label>
             </Field>
             <Field id="email" label="Email" optional error={err("customer.email")} hint="For your order confirmation.">
               <input id="email" name="email" type="email" autoComplete="email" className="field" {...aria("customer.email", "email")} />
@@ -430,6 +471,10 @@ export function CheckoutForm() {
             )}
 
             <label className="mt-6 flex items-start gap-3 text-sm">
+              <input name="rememberMe" type="checkbox" defaultChecked className="mt-0.5 h-4 w-4 accent-[#173F2B]" />
+              <span>Remember my details on this device for next time</span>
+            </label>
+            <label className="mt-3 flex items-start gap-3 text-sm">
               <input id="acceptTerms" name="acceptTerms" type="checkbox" className="mt-0.5 h-4 w-4 accent-[#173F2B]" aria-invalid={Boolean(err("acceptTerms")) || undefined} />
               <span>
                 I agree to the <Link href="/terms" className="underline underline-offset-4" target="_blank">terms</Link> and{" "}
