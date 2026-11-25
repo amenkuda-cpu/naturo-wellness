@@ -1,10 +1,12 @@
 "use server";
 
 import { revalidatePath, updateTag } from "next/cache";
+import { redirect } from "next/navigation";
 import { z } from "zod";
 import { requireStaff, type StaffContext } from "@/lib/auth";
 import { emailReceipt, refreshPaymentStatus } from "@/lib/orders/service";
 import { getStaffRepository } from "@/lib/repositories";
+import { createServiceClient } from "@/lib/supabase/server";
 import { isOnlinePayment } from "@/lib/types";
 
 /**
@@ -85,6 +87,62 @@ export async function recheckPaymentAction(formData: FormData) {
   const order = await repo.getOrder(id);
   if (order) await refreshPaymentStatus(order);
   revalidatePath(`/admin/orders/${id}`);
+}
+
+/**
+ * Permanently deletes an order (failed payments, test or duplicate orders). Admins only; the
+ * form must repeat the order number. Paid orders are refused (refund or mark them first) so
+ * money records are never lost. Tracked stock is put back unless the goods already left.
+ */
+export async function deleteOrderAction(formData: FormData) {
+  const ctx = await requireStaff({ admin: true });
+  const parsed = z
+    .object({ orderId: z.uuid(), confirm: z.string().trim().max(40) })
+    .safeParse(Object.fromEntries(formData));
+  if (!parsed.success) throw new Error("Invalid delete request.");
+  const repo = await getStaffRepository(ctx);
+  const order = await repo.getOrder(parsed.data.orderId);
+  if (!order) redirect("/admin/orders");
+  if (parsed.data.confirm.toUpperCase() !== order.orderNumber.toUpperCase()) {
+    redirect(`/admin/orders/${order.id}?delete=mismatch`);
+  }
+  if (order.paymentStatus === "paid") redirect(`/admin/orders/${order.id}?delete=paid`);
+
+  const db = createServiceClient();
+  const goodsLeft = order.status === "completed" || order.status === "out_for_delivery";
+  let restocked = false;
+  if (!goodsLeft) {
+    const { data: moves, error } = await db
+      .from("inventory_movements")
+      .select("variant_id, change")
+      .eq("order_id", order.id)
+      .eq("reason", "order");
+    if (error) throw new Error(error.message);
+    for (const m of moves ?? []) {
+      const qty = -m.change;
+      if (qty <= 0) continue;
+      const { data: v } = await db.from("product_variants").select("stock_quantity, stock_status").eq("id", m.variant_id).maybeSingle();
+      if (!v || v.stock_quantity === null) continue;
+      const next = v.stock_quantity + qty;
+      await db
+        .from("product_variants")
+        .update({ stock_quantity: next, stock_status: v.stock_status === "out_of_stock" ? "in_stock" : v.stock_status })
+        .eq("id", m.variant_id);
+      await db.from("inventory_movements").insert({
+        variant_id: m.variant_id,
+        change: qty,
+        reason: "cancellation",
+        note: `Order ${order.orderNumber} deleted by ${actor(ctx)}`,
+      });
+      restocked = true;
+    }
+  }
+  const { error } = await db.from("orders").delete().eq("id", order.id);
+  if (error) throw new Error(error.message);
+  if (restocked) updateTag("catalog");
+  revalidatePath("/admin/orders");
+  revalidatePath("/admin");
+  redirect(`/admin/orders?deleted=${encodeURIComponent(order.orderNumber)}`);
 }
 
 const priceInput = z

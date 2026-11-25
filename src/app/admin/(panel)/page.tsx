@@ -1,5 +1,6 @@
 import { ArrowUpRight, Truck, ChevronRight, MessageSquareText, Plus, ShoppingBag, Store, TriangleAlert } from "lucide-react";
 import Link from "next/link";
+import { after } from "next/server";
 import { AutoRefresh, Donut, Gauge, RevenueFlow, StatCard } from "@/components/admin/live";
 import { DevModeBanner, IconChip, PAYMENT_METHOD_LABEL, SetupNotice, StatusPill, harareTime, timeAgo, tones, type Tone } from "@/components/admin/ui";
 import { requireStaff } from "@/lib/auth";
@@ -48,13 +49,18 @@ export default async function AdminOverview({ searchParams }: { searchParams: Pr
     ops.listEnquiries(200).catch(() => []),
   ]);
 
-  // Pesepay never retries its callback, so reconcile a few waiting online payments on each visit.
-  let orders = loaded;
-  const waiting = orders.filter((o) => isOnlinePayment(o.paymentMethod) && o.paymentStatus === "pending" && requestNow() - Date.parse(o.createdAt) > 60_000).slice(0, 5);
+  // Pesepay never retries its callback, so reconcile recent waiting online payments, in the
+  // background after the page is sent (never make the dashboard wait on Pesepay). Results show
+  // on the next auto-refresh. Abandoned payments older than two days are left alone.
+  const orders = loaded;
+  const waiting = orders
+    .filter((o) => {
+      const age = requestNow() - Date.parse(o.createdAt);
+      return isOnlinePayment(o.paymentMethod) && o.paymentStatus === "pending" && age > 60_000 && age < 2 * 24 * 60 * 60 * 1000;
+    })
+    .slice(0, 5);
   if (waiting.length) {
-    const fresh = await Promise.all(waiting.map((o) => refreshPaymentStatus(o).catch(() => o)));
-    const byId = new Map(fresh.map((o) => [o.id, o]));
-    orders = orders.map((o) => byId.get(o.id) ?? o);
+    after(() => Promise.all(waiting.map((o) => refreshPaymentStatus(o).catch(() => o))));
   }
 
   const now = requestNow();

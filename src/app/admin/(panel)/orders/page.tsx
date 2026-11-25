@@ -26,9 +26,9 @@ const FILTERS: (OrderStatus | "all" | "open")[] = ["open", "all", "pending", "co
 // Staff data is always read per request.
 export const instant = false;
 
-export default async function AdminOrders({ searchParams }: { searchParams: Promise<{ status?: string; q?: string }> }) {
+export default async function AdminOrders({ searchParams }: { searchParams: Promise<{ status?: string; q?: string; deleted?: string }> }) {
   const ctx = await requireStaff();
-  const { status, q } = await searchParams;
+  const { status, q, deleted } = await searchParams;
   const active = FILTERS.find((f) => f === status) ?? "open";
   const repo = await getStaffRepository(ctx);
   const all = await repo.listOrders({ limit: 1000 });
@@ -45,6 +45,11 @@ export default async function AdminOrders({ searchParams }: { searchParams: Prom
     <>
       <AutoRefresh seconds={30} />
       <DevModeBanner ctx={ctx} />
+      {deleted && (
+        <p role="status" className="mb-4 rounded-[16px] bg-[var(--a-inset)] px-4 py-3 text-sm text-[var(--a-ink)]">
+          Order <b>{deleted.slice(0, 40)}</b> was deleted.
+        </p>
+      )}
       <AdminTitle title="Orders" subtitle="Every order placed on getnaturo.com, newest first. This page refreshes by itself.">
         <form className="relative w-full sm:w-80" role="search">
           <input type="hidden" name="status" value={active} />

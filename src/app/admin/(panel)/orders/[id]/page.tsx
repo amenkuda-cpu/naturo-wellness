@@ -1,4 +1,4 @@
-import { ArrowLeft, Banknote, Check, History, Mail, MessageCircle, MessageSquareText, Package, Phone, RefreshCw, Store, Truck, UserRound } from "lucide-react";
+import { ArrowLeft, Banknote, Check, History, Mail, MessageCircle, MessageSquareText, Package, Phone, RefreshCw, Store, Trash2, Truck, UserRound } from "lucide-react";
 import { MessageComposer } from "@/components/admin/message-composer";
 import { env } from "@/lib/env";
 import { ORDER_TEMPLATES, withOrder } from "@/lib/ops/templates";
@@ -28,7 +28,7 @@ import { orderCost } from "@/lib/ops/metrics";
 import { getStaffOps } from "@/lib/ops/repository";
 import { getStaffRepository } from "@/lib/repositories";
 import { isOnlinePayment } from "@/lib/types";
-import { recheckPaymentAction, resendReceiptAction, updateOrderStatusAction, updatePaymentStatusAction } from "../../../actions";
+import { deleteOrderAction, recheckPaymentAction, resendReceiptAction, updateOrderStatusAction, updatePaymentStatusAction } from "../../../actions";
 
 const STATUSES = ["pending", "confirmed", "preparing", "ready_for_collection", "out_for_delivery", "completed", "cancelled"] as const;
 const STEPS = ["pending", "confirmed", "preparing", "out_for_delivery", "completed"] as const;
@@ -36,9 +36,11 @@ const STEPS = ["pending", "confirmed", "preparing", "out_for_delivery", "complet
 // Staff data is always read per request.
 export const instant = false;
 
-export default async function AdminOrderDetail({ params }: { params: Promise<{ id: string }> }) {
+export default async function AdminOrderDetail({ params, searchParams }: { params: Promise<{ id: string }>; searchParams: Promise<{ delete?: string }> }) {
   const ctx = await requireStaff();
-  const { id } = await params;
+  const [{ id }, query] = await Promise.all([params, searchParams]);
+  const deleteNotice =
+    query.delete === "mismatch" ? "That didn't match the order number, so nothing was deleted." : query.delete === "paid" ? "Paid orders can't be deleted." : null;
   if (!/^[0-9a-f-]{36}$/i.test(id)) notFound();
   const [repo, ops] = await Promise.all([getStaffRepository(ctx), getStaffOps(ctx)]);
   const [order, opsReady] = await Promise.all([repo.getOrder(id), ops.ready()]);
@@ -242,6 +244,33 @@ export default async function AdminOrderDetail({ params }: { params: Promise<{ i
               </form>
             )}
           </Card>
+
+          {ctx.role === "admin" && (
+            <details className="rounded-[22px] border border-[var(--c-bad)]/40 bg-[var(--c-bad-bg)] p-4 text-sm">
+              <summary className="flex cursor-pointer items-center gap-2 font-semibold text-[var(--c-bad)]">
+                <Trash2 className="h-4 w-4" aria-hidden /> Delete this order
+              </summary>
+              {order.paymentStatus === "paid" ? (
+                <p className="mt-3 text-[var(--a-muted)]">This order is paid, so it can&apos;t be deleted. Mark the payment as refunded or cancelled first.</p>
+              ) : (
+                <form action={deleteOrderAction} className="mt-3 space-y-3">
+                  <input type="hidden" name="orderId" value={order.id} />
+                  <p className="text-[var(--a-muted)]">
+                    For failed payments, test or duplicate orders. This permanently removes the order, its items and history.
+                    {order.status === "completed" || order.status === "out_for_delivery" ? " Stock is not put back because the goods have left." : " Any tracked stock goes back on the shelf."}
+                  </p>
+                  {deleteNotice && <p className="font-semibold text-[var(--c-bad)]">{deleteNotice}</p>}
+                  <label className="block">
+                    <span className="mb-1 block text-[var(--a-muted)]">Type <b className="text-[var(--a-ink)]">{order.orderNumber}</b> to confirm</span>
+                    <input name="confirm" required autoComplete="off" className={field} />
+                  </label>
+                  <button className="inline-flex w-full items-center justify-center gap-2 rounded-full bg-[var(--c-bad)] px-5 py-2.5 text-sm font-semibold text-white transition hover:brightness-110">
+                    <Trash2 className="h-4 w-4" aria-hidden /> Delete order permanently
+                  </button>
+                </form>
+              )}
+            </details>
+          )}
         </div>
       </div>
     </>
