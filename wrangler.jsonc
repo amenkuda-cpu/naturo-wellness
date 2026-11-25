@@ -69,6 +69,8 @@
     "NEXT_PUBLIC_COLLECTION_DETAILS": "Collect from Naturo at the Realtime Building, cnr Central Ave & Third St, Harare. Mon–Fri 08:00–17:00, Sat 09:00–13:00. We will WhatsApp you when your order is ready.",
     "NEXT_PUBLIC_ANALYTICS_PROVIDER": "none",
     "NEXT_PUBLIC_META_PIXEL_ID": "2888065011576234",
-    "NEXT_PUBLIC_META_DOMAIN_VERIFICATION": "eq1v5kr1hfh80kc5s7gqauh2ub9piq"
+    "NEXT_PUBLIC_META_DOMAIN_VERIFICATION": "eq1v5kr1hfh80kc5s7gqauh2ub9piq",
+    "ZEPTOMAIL_API_URL": "https://cpaas.zoho.com",
+    "ORDER_ALERT_EMAIL": "info@getnaturo.com"
   }
 }
