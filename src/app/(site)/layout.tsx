@@ -4,6 +4,7 @@ import { MetaPixelEvents } from "@/components/analytics/meta-pixel";
 import { CartDrawer } from "@/components/cart/cart-drawer";
 import { Footer } from "@/components/layout/footer";
 import { Header } from "@/components/layout/header";
+import { WhatsAppFloat } from "@/components/layout/whatsapp-float";
 import { HeaderFallback } from "@/components/layout/header-fallback";
 import { SmoothScroll } from "@/components/providers/smooth-scroll";
 import { StoreProvider } from "@/components/providers/store-provider";
@@ -55,6 +56,9 @@ export default async function SiteLayout({ children }: { children: React.ReactNo
       <Footer />
       <Suspense fallback={null}>
         <CartDrawer />
+      </Suspense>
+      <Suspense fallback={null}>
+        <WhatsAppFloat />
       </Suspense>
       {metaPixel.enabled && (
         <>
