@@ -373,16 +373,10 @@ export function Hero({ catalog, samplePricing = false }: { catalog: Product[]; s
           </button>
         </div>
 
-        <div className="flex gap-1 [grid-area:bars]" role="group" aria-label="Choose a drink">
+        {/* Progress only (the arrows and range buttons do the navigating): 17 tiny tap targets fail on phones. */}
+        <div className="flex gap-1 [grid-area:bars]" aria-hidden>
           {slides.map((s, i) => (
-            <button
-              key={s.product.id}
-              type="button"
-              onClick={() => go(i, true)}
-              aria-label={s.product.name}
-              aria-current={i === active ? "true" : undefined}
-              className="group relative h-6 min-w-0 flex-1"
-            >
+            <span key={s.product.id} className="group relative block h-6 min-w-0 flex-1">
               <span
                 className={cn(
                   "absolute inset-x-0 top-1/2 h-[3px] -translate-y-1/2 overflow-hidden rounded-full bg-current/20 transition group-hover:bg-current/35",
@@ -398,7 +392,7 @@ export function Hero({ catalog, samplePricing = false }: { catalog: Product[]; s
                   onAnimationEnd={() => i === active && go(active + 1)}
                 />
               </span>
-            </button>
+            </span>
           ))}
         </div>
 

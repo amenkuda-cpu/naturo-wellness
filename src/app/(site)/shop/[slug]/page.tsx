@@ -192,7 +192,7 @@ async function ProductContent({ slug }: { slug: string }) {
                   {product.verifiedBenefits.map((b) => <li key={b}>{b}</li>)}
                 </ul>
               )}
-              <p className="mt-6 text-xs text-ink/60">
+              <p className="mt-6 text-xs text-ink/75">
                 Naturo Wellness drinks are foods, not medicines, and are not intended to diagnose, treat, cure or prevent any disease.
               </p>
             </div>

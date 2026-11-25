@@ -36,11 +36,11 @@ export default async function ArticlePage({ params }: Props) {
       <div className="bg-warm py-16 lg:py-24">
         <div className="container-x grid gap-12 lg:grid-cols-12">
           <article className="max-w-3xl space-y-6 text-lg leading-relaxed text-ink/80 lg:col-span-8 [&_a]:font-medium [&_a]:text-forest [&_a]:underline [&_a]:underline-offset-4 [&_h2]:mt-10 [&_h2]:font-display [&_h2]:text-2xl [&_h2]:font-extrabold [&_h2]:text-forest [&_li]:ml-5 [&_li]:list-disc [&_ul]:space-y-2">
-            <p className="text-sm text-ink/60">
+            <p className="text-sm text-ink/75">
               By Naturo Wellness · <time dateTime={a.datePublished}>{new Date(a.datePublished).toLocaleDateString("en-GB", { day: "numeric", month: "long", year: "numeric" })}</time>
             </p>
             {a.body}
-            <p className="border-t border-forest/10 pt-6 text-sm text-ink/60">
+            <p className="border-t border-forest/10 pt-6 text-sm text-ink/75">
               This article is general information, not medical advice. Naturo Wellness drinks are foods, not medicines.
             </p>
           </article>
