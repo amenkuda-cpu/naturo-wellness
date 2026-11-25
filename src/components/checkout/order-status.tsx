@@ -8,6 +8,7 @@ import { siteConfig } from "@/config/site";
 import { track } from "@/lib/analytics";
 import { cn } from "@/lib/cn";
 import { formatMoney } from "@/lib/commerce/pricing";
+import { ga4 } from "@/config/ga4";
 import { markPurchaseSent, purchaseAlreadySent, purchaseBridgeUrl } from "@/lib/meta-pixel";
 import type { PublicOrder } from "@/lib/orders/types";
 import { isOnlinePayment, type OrderStatus, type PaymentStatus } from "@/lib/types";
@@ -100,7 +101,7 @@ export function OrderStatusView({
   // methods: placed; online: provider-confirmed paid). Sent from a clean bridge
   // page in a no-referrer iframe so this page's private link never reaches Meta.
   useEffect(() => {
-    if (!metaPixel.enabled || order.status === "cancelled") return;
+    if ((!metaPixel.enabled && !ga4.enabled) || order.status === "cancelled") return;
     if (online ? order.paymentStatus !== "paid" : order.paymentStatus === "failed") return;
     if (Date.now() - Date.parse(order.createdAt) > 3 * 24 * 60 * 60 * 1000) return;
     if (purchaseAlreadySent(order.id)) return;
@@ -227,7 +228,14 @@ export function OrderStatusView({
                 {order.fulfilment.zoneName && <span className="block text-sm text-ink/70">{order.fulfilment.zoneName}</span>}
               </p>
             ) : (
-              <p className="mt-2 text-ink/80">Collect at {siteConfig.contact.address}. Mon–Fri 08:00–17:00, Sat 09:00–13:00. We&apos;ll WhatsApp you when it&apos;s ready.</p>
+              (() => {
+                const agreed = /\[Collect at agreed location: ([^\]]+)\]/.exec(order.notes ?? "")?.[1];
+                return agreed ? (
+                  <p className="mt-2 text-ink/80">Free collection at your agreed spot: {agreed}. We&apos;ll confirm the time with you on WhatsApp.</p>
+                ) : (
+                  <p className="mt-2 text-ink/80">Free collection at {siteConfig.contact.address}. Mon–Fri 08:00–17:00, Sat 09:00–13:00. We&apos;ll WhatsApp you when it&apos;s ready.</p>
+                );
+              })()
             )}
           </div>
         </section>

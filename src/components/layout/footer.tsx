@@ -25,6 +25,7 @@ const columns = [
       { href: "/ingredients", label: "Our ingredients" },
       { href: "/contact", label: "Contact" },
       { href: "/faq", label: "FAQs" },
+      { href: "/journal", label: "Journal" },
     ],
   },
   {
@@ -72,15 +73,10 @@ export function Footer() {
         <div className="lg:col-span-3">
           <h2 className="eyebrow text-sun">Get in touch</h2>
           <ul className="mt-5 space-y-3 text-sm text-warm/80">
-            {contact.phone ? (
-              <li>
-                <a href={`tel:${contact.phone.replace(/\s/g, "")}`} className="link-underline">{contact.phone}</a>
-              </li>
-            ) : null}
             {contact.whatsapp ? (
               <li>
                 <a href={`https://wa.me/${contact.whatsapp.replace(/\D/g, "")}`} className="link-underline" rel="noopener" target="_blank">
-                  WhatsApp us
+                  WhatsApp {contact.whatsapp}
                 </a>
               </li>
             ) : null}

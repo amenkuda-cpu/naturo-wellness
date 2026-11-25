@@ -45,5 +45,8 @@ export async function proxy(request: NextRequest) {
 }
 
 export const config = {
-  matcher: ["/account/:path*", "/admin/:path*", "/auth/:path*", "/checkout", "/api/checkout/:path*"],
+  // Every page goes through the proxy so www and http 301 to https://getnaturo.com (one canonical
+  // domain for search engines). Static files and images are skipped. The Supabase session refresh
+  // above still only runs on account, admin, auth and checkout routes.
+  matcher: ["/((?!_next/static|_next/image|images/|videos/|frames/|og/|favicon\\.ico|icon|apple-icon|.*\\.(?:png|jpg|jpeg|webp|avif|svg|ico|mp4|webm|woff2?|txt|xml|webmanifest)$).*)"],
 };

@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 import { ProsePage } from "@/components/layout/prose-page";
 
-export const metadata: Metadata = { title: "Privacy policy", alternates: { canonical: "/privacy" } };
+export const metadata: Metadata = { title: { absolute: "Privacy Policy | Naturo Wellness Zimbabwe" }, description: "How Naturo Wellness collects, uses and protects your personal information when you shop with us in Zimbabwe.", alternates: { canonical: "/privacy" } };
 
 export default function PrivacyPage() {
   return (

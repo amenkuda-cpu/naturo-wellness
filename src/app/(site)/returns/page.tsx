@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 import { ProsePage } from "@/components/layout/prose-page";
 
-export const metadata: Metadata = { title: "Refunds & returns", alternates: { canonical: "/returns" } };
+export const metadata: Metadata = { title: { absolute: "Refunds & Returns | Naturo Wellness Zimbabwe" }, description: "Naturo Wellness refunds and returns: what to do if something is wrong with your order, and how we put it right.", alternates: { canonical: "/returns" } };
 
 export default function ReturnsPage() {
   return (

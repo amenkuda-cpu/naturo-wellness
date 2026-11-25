@@ -1,21 +1,26 @@
-import { Clock, Mail, MapPin, MessageCircle, MessagesSquare, Phone } from "lucide-react";
+import { Clock, Mail, MapPin, MessageCircle, MessagesSquare, Truck } from "lucide-react";
 import type { Metadata } from "next";
 import { EnquiryForm } from "@/components/checkout/enquiry-form";
 import { OpenNowBadge, OpeningHoursTable } from "@/components/contact/opening-hours";
 import { PageHero } from "@/components/layout/page-hero";
+import { JsonLd } from "@/components/seo/json-ld";
+import { brand } from "@/config/brand";
 import { siteConfig } from "@/config/site";
+import { breadcrumbLd } from "@/lib/seo/schema";
 
 export const metadata: Metadata = {
-  title: "Contact Naturo Wellness",
-  description: "Get in touch with Naturo Wellness about orders, stockists and wholesale.",
+  title: { absolute: "Contact Naturo Wellness | WhatsApp Orders in Zimbabwe" },
+  description:
+    "Contact Naturo Wellness in Harare. Order wellness shots or ask a question on WhatsApp (+263 77 297 2693). Delivery across Zimbabwe, bulk orders welcome.",
   alternates: { canonical: "/contact" },
+  openGraph: { url: "/contact", title: "Contact Naturo Wellness | WhatsApp Orders in Zimbabwe" },
 };
 
 export default function ContactPage() {
   const c = siteConfig.contact;
   const rows = [
-    { icon: Phone, label: "Phone", value: c.phone, href: c.phone ? `tel:${c.phone.replace(/\s/g, "")}` : null },
-    { icon: MessageCircle, label: "WhatsApp", value: c.whatsapp, href: c.whatsapp ? `https://wa.me/${c.whatsapp.replace(/\D/g, "")}` : null },
+    // WhatsApp messages only: no call links anywhere on the site.
+    { icon: MessageCircle, label: "WhatsApp (messages only)", value: c.whatsapp, href: c.whatsapp ? `${brand.whatsappUrl}?text=${encodeURIComponent("Hi Naturo Wellness, ")}` : null },
     { icon: Mail, label: "Email", value: c.email, href: c.email ? `mailto:${c.email}` : null },
     { icon: MessagesSquare, label: "Messenger", value: c.messenger ? "Naturo Wellness on Facebook" : null, href: c.messenger },
     { icon: MapPin, label: "Visit us", value: c.address, href: c.mapUrl },
@@ -24,11 +29,12 @@ export default function ContactPage() {
 
   return (
     <>
+      <JsonLd data={breadcrumbLd([{ name: "Contact", path: "/contact" }])} />
       <PageHero
-        eyebrow="Contact"
+        eyebrow="Contact Naturo Wellness"
         title="Let's"
         accent="talk."
-        intro="Questions about an order, becoming a stockist, or bringing Naturo to your gym, salon or shop? We'd love to hear from you."
+        intro="The fastest way to reach us is WhatsApp. Order your shots, ask about delivery, or bring Naturo Wellness to your office, gym, salon or shop."
         motifs={["hibiscus", "pineapple-chunk"]}
         tone="sun"
       />
@@ -60,6 +66,19 @@ export default function ContactPage() {
                 </span>
               </li>
             ))}
+            <li className="flex items-start gap-5 py-6">
+              <span className="grid h-12 w-12 shrink-0 place-items-center rounded-full bg-cream text-botanical">
+                <Truck className="h-5 w-5" aria-hidden />
+              </span>
+              <span>
+                <span className="eyebrow block text-ink/70">Service area</span>
+                <span className="block text-lg font-semibold text-forest">Harare and across Zimbabwe</span>
+                <span className="mt-1 block text-ink/70">
+                  Delivery is free within 1 km of our shop at the Realtime Building. Our riders cover Harare CBD, we deliver across the rest of Zimbabwe, and you can
+                  collect for free at our shop or an agreed spot. See <a href="/delivery" className="underline underline-offset-4">delivery information</a>.
+                </span>
+              </span>
+            </li>
             <li className="flex items-start gap-5 py-6">
               <span className="grid h-12 w-12 shrink-0 place-items-center rounded-full bg-cream text-botanical">
                 <Clock className="h-5 w-5" aria-hidden />

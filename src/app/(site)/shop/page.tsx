@@ -7,10 +7,11 @@ import { getCatalog, getStoreSettings } from "@/lib/commerce/catalog";
 import type { Product } from "@/lib/types";
 
 export const metadata: Metadata = {
-  title: "Shop natural wellness drinks",
+  title: { absolute: "Naturo Wellness Shop | Buy Wellness Shots in Zimbabwe" },
   description:
-    "Shop Naturo wellness shots, traditional Zimbabwean favourites like Maheu, and herbal teas and powders, proudly made in Zimbabwe.",
+    "Shop Naturo Wellness shots made fresh in Harare: Ginger, Men's, Hibiscus, Glow and Pineapple, plus herbal teas, Maheu and cans. Delivery across Zimbabwe.",
   alternates: { canonical: "/shop" },
+  openGraph: { url: "/shop", title: "Naturo Wellness Shop | Buy Wellness Shots in Zimbabwe" },
 };
 
 /**
@@ -40,10 +41,10 @@ export default async function ShopPage() {
   return (
     <>
       <PageHero
-        eyebrow="Shop Naturo"
+        eyebrow="Shop Naturo Wellness"
         title="Natural goodness,"
         accent="bottled."
-        intro="Wellness shots, traditional favourites and herbal blends, made for everyday life."
+        intro="Wellness shots made fresh in Harare, plus herbal teas, traditional favourites and fruity cans. Order online or on WhatsApp, with delivery across Zimbabwe."
         motifs={["ginger", "hibiscus"]}
       />
       <Suspense fallback={<StaticCatalogue products={catalog} samplePricing={settings.samplePricing} />}>

@@ -9,7 +9,10 @@ import { AddToCartButton } from "@/components/product/add-to-cart";
 import { cn } from "@/lib/cn";
 import { gsap, useGSAP } from "@/lib/gsap";
 import type { Motif, Product } from "@/lib/types";
+import { siteConfig } from "@/config/site";
 import "./hero.css";
+
+const WHATSAPP_URL = `https://wa.me/${siteConfig.contact.whatsapp.replace(/\D/g, "")}?text=${encodeURIComponent("Hi Naturo, I'd like to place an order.")}`;
 
 /**
  * Product-carousel hero: a full-bleed colour per drink, a giant condensed
@@ -213,9 +216,29 @@ export function Hero({ catalog, samplePricing = false }: { catalog: Product[]; s
         if (e.key === "ArrowLeft") go(active - 1, true);
       }}
     >
-      <h1 id="hero-title" className="sr-only">
-        Naturo Wellness: natural wellness shots, herbal teas and traditional drinks, proudly made in Zimbabwe
-      </h1>
+      {/* Visible H1 and the two main actions, above the fold on every screen size. */}
+      <div className="nh-intro container-x absolute inset-x-0 z-[70] flex flex-col items-center text-center" style={{ color: "var(--nh-ink)" }}>
+        <h1 id="hero-title" className="max-w-[34rem] font-sans text-[0.72rem] font-bold uppercase leading-snug tracking-[0.16em] sm:text-sm">
+          Natural Wellness Shots, Made Fresh in Zimbabwe
+          <span className="sr-only"> by Naturo Wellness</span>
+        </h1>
+        <div className="mt-2.5 flex items-center gap-2">
+          <Link
+            href="/shop"
+            className="inline-flex h-10 items-center rounded-full bg-[var(--nh-ink)] px-5 font-sans text-xs font-bold uppercase tracking-[0.14em] text-[var(--nh-bg)] transition hover:brightness-125 sm:h-11 sm:px-6"
+          >
+            Shop now
+          </Link>
+          <a
+            href={WHATSAPP_URL}
+            target="_blank"
+            rel="noopener"
+            className="inline-flex h-10 items-center rounded-full border border-current/40 px-4 font-sans text-xs font-bold uppercase tracking-[0.14em] transition hover:bg-black/10 sm:h-11 sm:px-5"
+          >
+            Order on WhatsApp
+          </a>
+        </div>
+      </div>
 
       {/* Light falls from above; a fine grain keeps the flat colour from looking digital. */}
       <div aria-hidden className="nh-light pointer-events-none absolute inset-0 -z-10" />
@@ -284,7 +307,7 @@ export function Hero({ catalog, samplePricing = false }: { catalog: Product[]; s
             <div key={`${s.product.id}-${m}`} className="nh-ing" data-k={k} data-on={slot === 0 || undefined}>
               <div className="nh-ing-par">
                 <div className="nh-ing-float relative" style={{ "--d": `${-k * 1.3}s` } as React.CSSProperties}>
-                  <Image src={ingredientSrc(m)} alt="" width={600} height={600} unoptimized loading="lazy" draggable={false} />
+                  <Image src={ingredientSrc(m)} alt="" width={600} height={600} sizes="22vw" loading="lazy" draggable={false} />
                 </div>
               </div>
             </div>

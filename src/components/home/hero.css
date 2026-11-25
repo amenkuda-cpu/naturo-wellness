@@ -5,7 +5,7 @@
 
 .nh-hero {
   --nh-ease: cubic-bezier(0.65, 0, 0.2, 1);
-  --head-top: 6.5rem;
+  --head-top: 10.25rem;
   --stage-h: 68vh;
   --stage-base: 3vh;
   background-color: var(--nh-bg);
@@ -40,6 +40,7 @@
 
 /* Headline */
 .nh-head-layer { top: var(--head-top); z-index: 8; }
+.nh-intro { top: 5.6rem; }
 .nh-head {
   font-family: var(--font-display);
   font-weight: 800;
@@ -184,8 +185,9 @@
 
 /* Phones and tablets: taller words, bottle in the lower half, neighbours peek in. */
 @media (max-width: 63.99rem) {
-  .nh-hero { --head-top: 6.5rem; --stage-h: 44svh; --stage-base: 12.5rem; }
-  .nh-head { font-size: min(14svh, 20.5vw); }
+  .nh-hero { --head-top: 10.5rem; --stage-h: 42svh; --stage-base: 12.5rem; }
+  .nh-head { font-size: min(12svh, 18vw); }
+  .nh-intro { top: 5rem; }
   .nh-arch { width: 78vw; height: 58svh; }
   .nh-ring { width: 112vw; }
   .nh-item[data-slot="1"] { --tx: 42vw; --ty: -9svh; --sc: 0.46; --bl: 2px; }

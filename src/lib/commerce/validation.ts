@@ -60,7 +60,17 @@ export const fulfilmentSchema = z.discriminatedUnion("method", [
     zoneId: z.string().min(1, "Choose a delivery area."),
     address: addressSchema,
   }),
-  z.object({ method: z.literal("collection") }),
+  z
+    .object({
+      method: z.literal("collection"),
+      /** "shop" = Naturo at the Realtime Building; "agreed" = a meeting point the customer suggests. Both are free. */
+      point: z.enum(["shop", "agreed"]).optional().default("shop"),
+      meetingPoint: z.string().trim().max(200, "Keep the meeting point under 200 characters.").optional().default(""),
+    })
+    .refine((f) => f.point !== "agreed" || f.meetingPoint.length >= 3, {
+      path: ["meetingPoint"],
+      message: "Tell us where you'd like to meet.",
+    }),
 ]);
 
 export const paymentMethodSchema = z.enum(["cash_on_delivery", "manual", "paynow", "pesepay"], {

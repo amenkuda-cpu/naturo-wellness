@@ -1,6 +1,7 @@
 import type { Metadata, Viewport } from "next";
 import { Bricolage_Grotesque, Instrument_Serif, Outfit } from "next/font/google";
 import { metaPixel } from "@/config/meta";
+import { brand } from "@/config/brand";
 import { siteConfig } from "@/config/site";
 import "./globals.css";
 
@@ -27,22 +28,39 @@ const sans = Outfit({
 export const metadata: Metadata = {
   metadataBase: new URL(siteConfig.url),
   title: {
-    default: "Naturo Wellness | Natural wellness drinks, proudly Zimbabwean",
+    default: "Naturo Wellness | Natural Wellness Shots in Zimbabwe",
     template: "%s | Naturo Wellness",
   },
-  description: siteConfig.description,
-  applicationName: siteConfig.name,
-  // Meta domain verification (Business Manager → Brand safety → Domains).
-  ...(metaPixel.domainVerification ? { other: { "facebook-domain-verification": metaPixel.domainVerification } } : {}),
+  description:
+    "Naturo Wellness makes natural wellness shots, made fresh in Harare, Zimbabwe. Ginger, Men's, Hibiscus, Glow and Pineapple. Order online or on WhatsApp.",
+  applicationName: brand.name,
+  authors: [{ name: brand.name, url: siteConfig.url }],
+  creator: brand.name,
+  publisher: brand.name,
+  // Meta domain verification (Business Manager → Brand safety → Domains) and Search Console / Bing.
+  other: {
+    ...(metaPixel.domainVerification ? { "facebook-domain-verification": metaPixel.domainVerification } : {}),
+    ...(process.env.NEXT_PUBLIC_BING_SITE_VERIFICATION ? { "msvalidate.01": process.env.NEXT_PUBLIC_BING_SITE_VERIFICATION } : {}),
+  },
+  // TODO(Naturo): paste the Google Search Console HTML-tag token into NEXT_PUBLIC_GOOGLE_SITE_VERIFICATION.
+  ...(process.env.NEXT_PUBLIC_GOOGLE_SITE_VERIFICATION ? { verification: { google: process.env.NEXT_PUBLIC_GOOGLE_SITE_VERIFICATION } } : {}),
   openGraph: {
     type: "website",
-    siteName: siteConfig.name,
+    siteName: brand.name,
     locale: "en_ZW",
-    title: "Naturo Wellness: Feel good. Naturally.",
-    description: siteConfig.description,
+    url: "/",
+    title: "Naturo Wellness | Natural Wellness Shots in Zimbabwe",
+    description: "Natural wellness shots, made fresh in Harare, Zimbabwe. Order online or on WhatsApp.",
+    images: [{ url: brand.shareImage.src, width: brand.shareImage.width, height: brand.shareImage.height, alt: brand.shareImage.alt }],
   },
-  twitter: { card: "summary_large_image" },
-  alternates: { canonical: "/" },
+  twitter: {
+    card: "summary_large_image",
+    title: "Naturo Wellness | Natural Wellness Shots in Zimbabwe",
+    description: "Natural wellness shots, made fresh in Harare, Zimbabwe.",
+    images: [brand.shareImage.src],
+  },
+  // Icons come from the file conventions: app/favicon.ico, app/icon.png and app/apple-icon.png.
+  formatDetection: { telephone: false },
 };
 
 export const viewport: Viewport = {

@@ -6,9 +6,9 @@ import { MotifImage } from "@/components/product/product-image";
 import type { Motif } from "@/lib/types";
 
 export const metadata: Metadata = {
-  title: "Our ingredients",
+  title: { absolute: "Naturo Wellness Ingredients | Honest Labels, Zimbabwe" },
   description:
-    "The familiar, plant-based flavours that inspire Naturo, and our commitment to honest, clearly presented labels.",
+    "The natural ingredients behind Naturo Wellness shots and teas, like ginger, hibiscus and pineapple, and our promise of honest, clearly printed labels.",
   alternates: { canonical: "/ingredients" },
 };
 

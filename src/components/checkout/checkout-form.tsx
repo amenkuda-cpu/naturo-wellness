@@ -11,6 +11,7 @@ import { useStore } from "@/components/providers/store-provider";
 import { ButtonLabel, buttonClasses } from "@/components/ui/button";
 import { siteConfig } from "@/config/site";
 import { track } from "@/lib/analytics";
+import { ga4 } from "@/config/ga4";
 import { metaInitiateCheckout } from "@/lib/meta-pixel";
 import { cn } from "@/lib/cn";
 import { formatMoney } from "@/lib/commerce/pricing";
@@ -29,6 +30,7 @@ const FIELD_IDS: Record<string, string> = {
   "fulfilment.address.suburb": "suburb",
   "fulfilment.address.city": "city",
   "fulfilment.zoneId": "zone",
+  "fulfilment.meetingPoint": "meetingPoint",
   paymentMethod: "payment-0",
   acceptTerms: "acceptTerms",
   ageConfirmed: "ageConfirmed",
@@ -87,6 +89,15 @@ function rememberDetails(fd: FormData) {
   }
 }
 
+/** Naturo shop, Realtime Building, cnr Central Ave & Third St, Harare. */
+const SHOP = { lat: -17.824752, lng: 31.05159 };
+
+function distanceKm(lat1: number, lng1: number, lat2: number, lng2: number) {
+  const r = (d: number) => (d * Math.PI) / 180;
+  const a = Math.sin(r(lat2 - lat1) / 2) ** 2 + Math.cos(r(lat1)) * Math.cos(r(lat2)) * Math.sin(r(lng2 - lng1) / 2) ** 2;
+  return 6371 * 2 * Math.asin(Math.sqrt(a));
+}
+
 export function CheckoutForm() {
   const { lines, hydrated } = useCart();
   const { settings, byId } = useStore();
@@ -97,7 +108,30 @@ export function CheckoutForm() {
   const [method, setMethod] = useState<FulfilmentMethod>(
     zones.length > 0 ? "delivery" : "collection",
   );
-  const [zoneId, setZoneId] = useState(zones[0]?.id ?? "");
+  // Start on a paid area so the free 1 km zone is a deliberate choice (staff still confirm every address).
+  const [zoneId, setZoneId] = useState(zones.find((z) => z.fee !== 0)?.id ?? zones[0]?.id ?? "");
+  const [point, setPoint] = useState<"shop" | "agreed">("shop");
+  const [distanceNote, setDistanceNote] = useState<string | null>(null);
+  const freeZone = zones.find((z) => z.fee === 0);
+
+  /** Optional: measure the distance to the Realtime Building and pick the free 1 km zone if it applies. */
+  function checkDistance() {
+    if (!navigator.geolocation) return setDistanceNote("Your browser can't share your location. Pick your area below.");
+    setDistanceNote("Checking your location…");
+    navigator.geolocation.getCurrentPosition(
+      (pos) => {
+        const km = distanceKm(pos.coords.latitude, pos.coords.longitude, SHOP.lat, SHOP.lng);
+        if (km <= 1 && freeZone) {
+          setZoneId(freeZone.id);
+          setDistanceNote(`You're about ${Math.max(0.1, km).toFixed(1)} km from us, so delivery is free.`);
+        } else {
+          setDistanceNote(`You're about ${km.toFixed(1)} km from us. Free delivery covers 1 km, so pick your area below.`);
+        }
+      },
+      () => setDistanceNote("We couldn't get your location. Pick your area below."),
+      { enableHighAccuracy: true, timeout: 10000, maximumAge: 60000 },
+    );
+  }
   const [payment, setPayment] = useState<PaymentMethodId | "">(settings.paymentMethods[0]?.id ?? "");
   const [promoInput, setPromoInput] = useState("");
   const [promo, setPromo] = useState("");
@@ -207,7 +241,7 @@ export function CheckoutForm() {
                 instructions: String(fd.get("instructions") ?? ""),
               },
             }
-          : { method },
+          : { method, point, meetingPoint: point === "agreed" ? String(fd.get("meetingPoint") ?? "") : "" },
       paymentMethod: payment,
       promoCode: promo,
       notes: String(fd.get("notes") ?? ""),
@@ -247,6 +281,8 @@ export function CheckoutForm() {
       cart.clear();
       track("purchase", { order_number: data.orderNumber, payment_method: payment, value: quote.total });
       if (data.next.kind === "redirect") window.location.assign(data.next.url);
+      // With GA4 on, open the order page with a full load so gtag (not loaded there) never sees its private link.
+      else if (ga4.enabled) window.location.assign(data.next.url);
       else router.push(data.next.url);
     } catch {
       setFormError("Network error. Please check your connection and try again.");
@@ -324,8 +360,8 @@ export function CheckoutForm() {
           <div className="grid gap-3 sm:grid-cols-2" role="radiogroup" aria-label="Fulfilment method">
             {(
               [
-                { id: "delivery", label: "Delivery", icon: Truck, disabled: zones.length === 0, note: zones.length ? "To your door" : "Not available yet" },
-                { id: "collection", label: "Collection", icon: Store, disabled: !settings.collection.enabled, note: "Collect from Naturo" },
+                { id: "delivery", label: "Delivery", icon: Truck, disabled: zones.length === 0, note: zones.length ? (freeZone ? "Free within 1 km of our shop" : "To your door") : "Not available yet" },
+                { id: "collection", label: "Collect for free", icon: Store, disabled: !settings.collection.enabled, note: "At our shop or a spot we agree" },
               ] as const
             ).map((o) => (
               <label
@@ -356,6 +392,17 @@ export function CheckoutForm() {
 
           {method === "delivery" ? (
             <div className="space-y-5">
+              {freeZone && (
+                <div className="rounded-2xl bg-cream p-4 text-sm text-ink/75">
+                  <p>
+                    <strong className="text-forest">Free delivery within 1 km</strong> of the Realtime Building, cnr Central Ave &amp; Third St, Harare.
+                  </p>
+                  <button type="button" onClick={checkDistance} className="mt-2 font-semibold text-forest underline underline-offset-4">
+                    Check if I&apos;m within 1 km
+                  </button>
+                  {distanceNote && <p className="mt-2" role="status">{distanceNote}</p>}
+                </div>
+              )}
               <Field id="zone" label="Delivery area" error={err("fulfilment.zoneId")}>
                 <select id="zone" value={zoneId} onChange={(e) => setZoneId(e.target.value)} className="field" {...aria("fulfilment.zoneId", "zone")}>
                   {zones.map((z) => (
@@ -381,9 +428,47 @@ export function CheckoutForm() {
               </Field>
             </div>
           ) : (
-            <p className="rounded-2xl bg-cream p-4 text-sm text-ink/75">
-              {settings.collection.details ?? "Collection details will be confirmed by our team when we confirm your order."}
-            </p>
+            <div className="space-y-4">
+              <div className="grid gap-3 sm:grid-cols-2" role="radiogroup" aria-label="Where to collect">
+                {(
+                  [
+                    { id: "shop", label: "At the Naturo shop", note: "Realtime Building, Harare · Free" },
+                    { id: "agreed", label: "At an agreed spot", note: "Suggest a meeting point · Free" },
+                  ] as const
+                ).map((o) => (
+                  <label
+                    key={o.id}
+                    className={cn(
+                      "flex min-h-14 cursor-pointer items-center gap-3 rounded-2xl border p-4 transition-colors has-[:focus-visible]:ring-2 has-[:focus-visible]:ring-botanical",
+                      point === o.id ? "border-forest bg-forest/[0.04]" : "border-ink/15 hover:border-forest/50",
+                    )}
+                  >
+                    <input type="radio" name="point" value={o.id} checked={point === o.id} onChange={() => setPoint(o.id)} className="h-4 w-4 accent-[#173F2B]" />
+                    <span>
+                      <span className="block font-semibold">{o.label}</span>
+                      <span className="block text-sm text-ink/70">{o.note}</span>
+                    </span>
+                  </label>
+                ))}
+              </div>
+              {point === "agreed" ? (
+                <Field id="meetingPoint" label="Where would you like to meet?" error={err("fulfilment.meetingPoint")}>
+                  <input
+                    id="meetingPoint"
+                    name="meetingPoint"
+                    maxLength={200}
+                    className="field"
+                    placeholder="e.g. Eastgate Mall main entrance"
+                    {...aria("fulfilment.meetingPoint", "meetingPoint")}
+                  />
+                </Field>
+              ) : null}
+              <p className="rounded-2xl bg-cream p-4 text-sm text-ink/75">
+                {point === "agreed"
+                  ? "We'll confirm the meeting point and time with you on WhatsApp before your order is ready. No charge."
+                  : settings.collection.details ?? "Collect from Naturo at the Realtime Building, cnr Central Ave & Third St, Harare. No charge."}
+              </p>
+            </div>
           )}
         </fieldset>
 

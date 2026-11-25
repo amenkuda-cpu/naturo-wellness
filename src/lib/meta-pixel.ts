@@ -1,6 +1,7 @@
 "use client";
 
 import { META_EXCLUDED_PATH, metaPixel } from "@/config/meta";
+import { ga4Event } from "@/lib/ga4";
 import type { Product, ProductVariant } from "@/lib/types";
 
 /**
@@ -31,7 +32,13 @@ export function metaTrack(event: string, params: Record<string, unknown> = {}, e
   }
 }
 
+// Each helper below sends the matching Meta Pixel AND GA4 event, so call sites stay simple.
+
 export function metaViewContent(product: Product, variant: ProductVariant | undefined) {
+  ga4Event("view_item", {
+    value: usd(variant?.price),
+    items: [{ item_id: product.id, item_name: product.name, item_category: product.category, price: usd(variant?.price), quantity: 1 }],
+  });
   metaTrack("ViewContent", {
     content_ids: [product.id],
     content_name: product.name,
@@ -42,6 +49,10 @@ export function metaViewContent(product: Product, variant: ProductVariant | unde
 }
 
 export function metaAddToCart(product: Product, variant: ProductVariant, quantity: number) {
+  ga4Event("add_to_cart", {
+    value: usd((variant.price ?? 0) * quantity),
+    items: [{ item_id: product.id, item_name: product.name, item_category: product.category, price: usd(variant.price), quantity }],
+  });
   metaTrack("AddToCart", {
     content_ids: [product.id],
     content_name: product.name,
@@ -54,6 +65,10 @@ export function metaAddToCart(product: Product, variant: ProductVariant, quantit
 
 export function metaInitiateCheckout(lines: Array<{ productId: string; quantity: number; unitPrice: number | null }>) {
   if (!lines.length) return;
+  ga4Event("begin_checkout", {
+    value: usd(lines.reduce((sum, l) => sum + (l.unitPrice ?? 0) * l.quantity, 0)),
+    items: lines.map((l) => ({ item_id: l.productId, price: usd(l.unitPrice), quantity: l.quantity })),
+  });
   metaTrack("InitiateCheckout", {
     content_ids: [...new Set(lines.map((l) => l.productId))],
     content_type: "product",

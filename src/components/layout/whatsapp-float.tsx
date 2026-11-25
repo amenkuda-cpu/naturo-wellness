@@ -1,6 +1,7 @@
 "use client";
 
 import { usePathname } from "next/navigation";
+import { useSyncExternalStore } from "react";
 import { useCart } from "@/components/cart/cart-store";
 import { useStore } from "@/components/providers/store-provider";
 import { siteConfig } from "@/config/site";
@@ -15,7 +16,10 @@ export function WhatsAppFloat() {
   const pathname = usePathname() ?? "/";
   const { lines } = useCart();
   const { catalog, byId } = useStore();
+  // The home hero has its own WhatsApp button and controls in this corner: show the float once past it.
+  const pastHero = useSyncExternalStore(subscribeScroll, () => window.scrollY > window.innerHeight * 0.7, () => false);
   if (pathname.startsWith("/order/")) return null;
+  const hidden = pathname === "/" && !pastHero;
 
   const productSlug = /^\/shop\/([^/]+)$/.exec(pathname)?.[1];
   const product = productSlug ? catalog.find((p) => p.slug === productSlug) : undefined;
@@ -44,7 +48,9 @@ export function WhatsAppFloat() {
       rel="noopener"
       onClick={() => metaTrack("Contact", { content_name: "WhatsApp" })}
       aria-label="Order or ask us on WhatsApp"
-      className={`fixed right-4 z-[55] inline-flex items-center gap-2 rounded-full bg-[#25D366] py-3 pl-3.5 pr-4 text-sm font-semibold text-[#0b2e17] shadow-[0_10px_30px_-8px_rgba(0,0,0,0.45)] ring-1 ring-black/5 transition hover:-translate-y-0.5 hover:brightness-105 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#25D366] sm:right-6 ${lift}`}
+      aria-hidden={hidden || undefined}
+      tabIndex={hidden ? -1 : undefined}
+      className={`fixed right-4 ${hidden ? "pointer-events-none translate-y-24 opacity-0" : "opacity-100"} duration-300 z-[55] inline-flex items-center gap-2 rounded-full bg-[#25D366] py-3 pl-3.5 pr-4 text-sm font-semibold text-[#0b2e17] shadow-[0_10px_30px_-8px_rgba(0,0,0,0.45)] ring-1 ring-black/5 transition hover:-translate-y-0.5 hover:brightness-105 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#25D366] sm:right-6 ${lift}`}
     >
       <span className="absolute inset-0 -z-10 animate-ping rounded-full bg-[#25D366]/40 [animation-duration:2.6s] [animation-iteration-count:3] motion-reduce:hidden" aria-hidden />
       <svg viewBox="0 0 24 24" className="h-6 w-6 shrink-0" fill="currentColor" aria-hidden>
@@ -53,4 +59,13 @@ export function WhatsAppFloat() {
       <span>Order on WhatsApp</span>
     </a>
   );
+}
+
+function subscribeScroll(onChange: () => void) {
+  window.addEventListener("scroll", onChange, { passive: true });
+  window.addEventListener("resize", onChange);
+  return () => {
+    window.removeEventListener("scroll", onChange);
+    window.removeEventListener("resize", onChange);
+  };
 }

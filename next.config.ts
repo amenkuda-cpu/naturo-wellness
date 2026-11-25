@@ -25,10 +25,23 @@ const nextConfig: NextConfig = {
   // SKIP_BUILD_TYPECHECK=1 so the build doesn't type-check a second time.
   typescript: { ignoreBuildErrors: process.env.SKIP_BUILD_TYPECHECK === "1" },
   images: {
-    formats: ["image/avif", "image/webp"],
+    // Workers can't resize on request: serve pre-sized WebP files (scripts/make-image-sizes.mjs).
+    loader: "custom",
+    loaderFile: "./src/lib/image-loader.ts",
     qualities: [75, 85],
     deviceSizes: [640, 750, 828, 1080, 1200, 1920],
     imageSizes: [16, 32, 48, 64, 96, 128, 256, 384],
+  },
+  // Friendly aliases people type or link to (permanent = 308, treated like a 301 by search engines).
+  async redirects() {
+    return [
+      { source: "/about", destination: "/our-story", permanent: true },
+      { source: "/about-us", destination: "/our-story", permanent: true },
+      { source: "/blog", destination: "/journal", permanent: true },
+      { source: "/blog/:slug", destination: "/journal/:slug", permanent: true },
+      { source: "/products", destination: "/shop", permanent: true },
+      { source: "/products/:slug", destination: "/shop/:slug", permanent: true },
+    ];
   },
   async headers() {
     return [

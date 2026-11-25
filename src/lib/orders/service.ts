@@ -143,6 +143,11 @@ export async function placeOrder(data: CheckoutData, customerId: string | null):
       notes: [
         ageRestricted ? "[18+ confirmed by customer at checkout]" : "",
         data.customer.whatsapp === false ? "[Not on WhatsApp]" : "",
+        data.fulfilment.method === "collection"
+          ? data.fulfilment.point === "agreed"
+            ? `[Collect at agreed location: ${data.fulfilment.meetingPoint}]`
+            : "[Collect at the Naturo shop]"
+          : "",
         data.notes,
       ]
         .filter(Boolean)

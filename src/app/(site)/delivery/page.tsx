@@ -4,8 +4,8 @@ import { getStoreSettings } from "@/lib/commerce/catalog";
 import { formatMoney } from "@/lib/commerce/pricing";
 
 export const metadata: Metadata = {
-  title: "Delivery information",
-  description: "How Naturo Wellness delivery and collection works.",
+  title: { absolute: "Naturo Wellness Delivery | Harare & Across Zimbabwe" },
+  description: "How Naturo Wellness delivery and collection work: delivery areas and fees in Harare and across Zimbabwe, and how we keep your shots fresh.",
   alternates: { canonical: "/delivery" },
 };
 
